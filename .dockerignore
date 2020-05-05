@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+.nyc_output
+.pgadmin
+.postgres
+.vscode
+coverage
+tests
+.gitignore
+Dockerfile

@@ -14,5 +14,12 @@
   },
   "author": "",
   "license": "ISC",
-  "homepage": "https://bitbucket.org/efimchuk/my-tts#readme"
+  "homepage": "https://bitbucket.org/efimchuk/my-tts#readme",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "koa": "^2.11.0",
+    "koa-body": "^4.1.1",
+    "koa-router": "^8.0.8",
+    "pg": "^8.1.0"
+  }
 }

@@ -39,7 +39,7 @@ services:
       ADMINPASSWORD: 1234
       PGSSLMODE: disable
     ports:
-      - "4000:4000"
+      - "3000:4000"
     networks:
       - postgres
     restart: unless-stopped

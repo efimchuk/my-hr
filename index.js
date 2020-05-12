@@ -2,30 +2,30 @@ const http = require('http');
 const PORT = process.env.PORT || 4000; // To support launching in Heroku environment
 const fs = require('fs');
 
-(async ()=>{
-    const requestHandler = (request, response) => {
-        switch(request.method){
-            case "GET":
-                switch(request.url){
-                    case "/":
-                        let indexPage = (fs.readFileSync('./index.html')).toString('utf-8');
-                        response.end(indexPage);
-                        break;
-                    default:
-                        response.end('Unsupported');
-                }
-                break;
-            default:
-                response.end('Unsupported');
-        }
-    }
-    
-    const server = http.createServer(requestHandler);
-    
-    server.listen(PORT, (err) => {
-        if (err) {
-            return console.log('something bad happened', err)
-        }
-        console.log(`server is listening on ${PORT}`)
-    });
-})();
+const Koa = require('koa');
+const app = new Koa();
+
+const api = require('./api/main/routes');
+const tests = require('./api/tests/routes');
+
+app.use(async function (ctx, next){
+    const start = new Date();
+    await next();
+    const ms = new Date() - start;
+    console.log(`${ctx.method} ${ctx.url} - ${ms}`);
+});
+
+app.use(api.routes());
+app.use(api.allowedMethods());
+
+app.use(tests.routes());
+app.use(tests.allowedMethods());
+
+try {
+    app.listen(PORT);
+} catch(e) {
+    console.log('Something is wrong.');
+    process.exit();
+}
+
+console.log(`Server is listening on ${PORT}`);

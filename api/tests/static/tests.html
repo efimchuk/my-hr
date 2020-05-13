@@ -1,0 +1,94 @@
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+        }
+        #tests{
+            padding-top: 66px;
+        }
+        .tests_row{
+            box-sizing: border-box;
+            padding: 5px;
+            user-select: none;
+        }
+        .tests_row:hover{
+            cursor: pointer;
+            background-color: rgba(0, 123, 255, 0.2);
+        }
+        .tests_id{
+            display: inline-block;
+            width: 10%;
+        }
+        .tests_name{
+            display: inline-block;
+            width: calc(90% - 5px);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script defer>
+        window.onload = async function(event){
+            document.getElementById('quit').addEventListener('click', async function(event){
+                let response = await fetch('auth', {
+                    method: 'DELETE',
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    credentials: 'same-origin'
+                });
+
+                console.log(response);
+
+                document.location.replace('/');
+            })
+
+            // Vue --------------------
+            Vue.component('test-row', {
+                props: ['test'],
+                template: `
+                    <div class="tests_row" :data-uuid="test.uuid" v-on:click="$emit('tests_row', test.uuid)">
+                        <div class="tests_id">{{ test.id }}</div> <div class="tests_name">{{ test.name }}</div>
+                    </div>`
+            })
+
+            let response = await fetch('tests?json', {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'no-cache',
+                credentials: 'same-origin'
+            });
+
+            let tests = await response.json();
+
+            let app = new Vue({
+                el          : '#tests',
+                data        : {
+                    tests   : tests
+                },
+                computed    : {},
+                methods     : {
+                    openTest : function(event){
+                        document.location.replace(`/tests/${event}`);
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary container-fluid fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/tests">Тесты</a>
+            <button type="button" class="btn btn-light float-left" id="quit">Выйти</button>
+        </div>
+    </nav>
+    <!-- <div class="container" style="height: 56px;"></div> -->
+    <div class="container" id="tests">
+        <div v-show="tests.length != 0">
+            <test-row v-for="test in tests" v-bind:test="test" v-on:tests_row="openTest"></test-row>
+        </div>
+        <div v-show="tests.length == 0" class="alert alert-light" role="alert">
+            Список пуст
+        </div>
+    </div>
+</body>

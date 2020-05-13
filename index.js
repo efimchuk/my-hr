@@ -5,6 +5,8 @@ const fs = require('fs');
 const Koa = require('koa');
 const app = new Koa();
 
+const db = require('./lib/db');
+
 const api = require('./api/main/routes');
 const tests = require('./api/tests/routes');
 
@@ -22,6 +24,7 @@ app.use(tests.routes());
 app.use(tests.allowedMethods());
 
 try {
+    db.Init();
     app.listen(PORT);
 } catch(e) {
     console.log('Something is wrong.');

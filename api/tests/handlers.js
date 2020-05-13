@@ -1,5 +1,23 @@
+const fs = require('fs');
+const Tests = require('../../lib/tests');
+
 async function tests_get(ctx, next){
-    ctx.body = 'GET /tests';
+    let authorName = ctx.cookies.get('user');
+
+    if(authorName == undefined){
+        ctx.redirect('/auth');
+        return;
+    }
+
+    if(ctx.query.json == undefined){
+        ctx.body = String(fs.readFileSync(__dirname + '/static/tests.html'));
+    } else {
+        let tests = await Tests.getTestsByAuthorName(authorName);
+
+        tests = tests == undefined ? [] : tests;
+
+        ctx.body = JSON.stringify(tests);
+    }
 }
 async function tests_uuid_get(ctx, next){
     ctx.body = `GET /tests/:uuid uuid=${ctx.params.uuid}`;

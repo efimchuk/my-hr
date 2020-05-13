@@ -1,0 +1,110 @@
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <script defer>
+        let timeoutID = window.setTimeout(onLoad, 500);
+
+        function onLoad(){
+            console.log(`onLoad: ${Date.now()}`);
+
+            if(document.readyState == 'complete'){
+                window.clearTimeout(timeoutID);
+
+                var authForm = new Vue({
+                    el: '#auth-form',
+                    data: {
+                        nickname:'',
+                        password:'',
+                        password_repeat:'',
+                        authMode: true, // true - registration, false - authorization
+                        message:''
+                    },
+                    computed:{
+                        submitButtonName: function(){
+                            return this.authMode?'Зарегистрироваться':'Авторизоваться';
+                        },
+                        allDataEntered: function(){
+                            return  this.nickname != '' &&
+                                    this.password != '' &&
+                                    (authMode ? this.password_repeat != '' : true)
+                        }
+                    },
+                    methods: {
+                        onSubmit : async function(){
+                            console.log('onSubmit');
+                            let data = {
+                                username: this.nickname, 
+                                password: this.password,
+                                authMode: this.authMode
+                            }
+
+                            const response = await fetch('auth', {
+                                method: 'POST',
+                                mode: 'cors',
+                                cache: 'no-cache',
+                                credentials: 'same-origin',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(data)
+                            });
+
+                            try{
+                                switch(response.status){
+                                    case 400:
+                                        this.message = await response.text();
+                                        break;
+                                    case 200:
+                                        document.location.replace('/tests');
+                                        break
+                                }
+                            } catch(error){
+                                console.log(error);
+                            }
+
+                        },
+                        onPasswordInput : function(){
+                            if(this.password != this.password_repeat){
+                                this.message = this.authMode?'Введенные пароли не совпадают!':'';
+                            } else {
+                                this.message = '';
+                            }
+                        }
+                    }
+                })
+
+                document.getElementById('auth-form').style.display = "block";
+            }
+        }
+    </script>
+</head>
+<body>
+    <form v-on:submit.prevent="onSubmit" id="auth-form" style="display:none; width:500px; margin-top:100px;" class="container">
+        <div class="form-group">
+            <label for="nickname_authForm">Имя пользователя</label>
+            <input v-model="nickname" type="type" required id="nickname_authForm" class="form-control">
+            <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
+        </div>
+        <div class="form-group">
+            <label for="password_authForm">Пароль</label>
+            <input v-model="password" v-on:input="onPasswordInput" type="password" id="password_authForm" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="repeatPassword_authForm" v-show="authMode">Повторите пароль</label>
+            <input v-model="password_repeat" v-on:input="onPasswordInput" type="password" v-show="authMode" id="repeatPassword_authForm" class="form-control">
+        </div>
+        <div class="form-group form-check">
+            <input v-model="authMode" type="checkbox" id="authmode_authForm" class="form-check-input">
+            <label class="form-check-label" for="authmode_authForm">Нет аккаунта</label>
+        </div>
+        <div v-show="message!=''" class="alert alert-danger" role="alert">{{message}}</div>
+        <button type="submit" class="btn btn-primary">{{submitButtonName}}</button>
+    </form>
+</body>

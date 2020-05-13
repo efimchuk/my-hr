@@ -1,19 +1,63 @@
-async function main_path(ctx, next){
-    ctx.body = 'GET /';
+const fs = require('fs');
+const Users = require('../../lib/users');
+
+async function main_get(ctx, next){
+    let authorName = ctx.cookies.get('user');
+
+    if(authorName != undefined){
+        ctx.redirect('/tests');
+        return;
+    }
+
+    ctx.body = String(fs.readFileSync(__dirname + '/static/index.html'));
 }
 
-async function auth_path(ctx, nest){
-    ctx.body = 'GET /auth';
+async function auth_get(ctx, nest){
+    ctx.body = String(fs.readFileSync(__dirname + '/static/auth.html'));
 }
 
 async function auth_post(ctx, nest){
-    ctx.cookies.set('session', 'kek', { expires : Date.now() + 1000*60*60*24*2, signed: true })
-    ctx.body = 'POST /auth';
+    let body = ctx.request.body;
+
+    if(body.authMode){
+        let user = await Users.getUserByName(body.username);
+            
+        if(user != undefined){
+            ctx.status = 400;
+            ctx.body = 'Указанное име пользователя уже занято';
+            return;
+        } else {
+            let newUser = Users.addNewUser(body.username, body.password);
+
+            ctx.cookies.set('user', newUser.name);
+            ctx.status = 301;
+            ctx.redirect('/tests');
+            return;
+        }
+    } else {
+        let user = await Users.getUserByName(body.username);
+
+        if(user != undefined){
+            if(user.password == body.password){
+                ctx.cookies.set('user', user.name);
+                ctx.status = 301;
+                ctx.redirect('/tests');
+                return;
+            } else {
+                ctx.status = 400;
+                ctx.body = 'Неправильный пароль';
+                return;
+            }
+        } else {
+            ctx.status = 400;
+            ctx.body = 'Пользователь с указанным имененем не зарегистрирован';
+            return;
+        }
+    }
 }
 
 async function auth_delete(ctx, nest){
-    ctx.cookies.set('session', 'kek', { expires : Date.now() - 1000*60*60*24*2, signed: true })
-    ctx.body = 'DELETE /auth';
+    ctx.cookies.set('user', '0', {expires : new Date()})
 }
 
 module.exports = {

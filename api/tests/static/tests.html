@@ -6,7 +6,19 @@
             padding: 0;
         }
         #tests{
-            padding-top: 66px;
+            padding-top: 73px;
+        }
+        #tests-inner{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+        #testName{
+            margin-bottom: .25em;
+            margin-top: .25em;
+            color: white;
+        }
+        #tests-list{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
         }
         .tests_row{
             box-sizing: border-box;
@@ -20,10 +32,11 @@
         .tests_id{
             display: inline-block;
             width: 10%;
+            text-align: center;
         }
         .tests_name{
             display: inline-block;
-            width: calc(90% - 5px);
+            width: calc(83% - 5px);
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -39,15 +52,16 @@
 
                 console.log(response);
 
-                document.location.replace('/');
+                document.location.assign('/');
             })
 
             // Vue --------------------
             Vue.component('test-row', {
                 props: ['test'],
                 template: `
-                    <div class="tests_row" :data-uuid="test.uuid" v-on:click="$emit('tests_row', test.uuid)">
+                    <div class="tests_row" :data-uuid="test.uuid" v-on:click="$emit('tests_row', $event, test)">
                         <div class="tests_id">{{ test.id }}</div> <div class="tests_name">{{ test.name }}</div>
+                        <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="$emit('deleting-test', test)">Удалить</button>
                     </div>`
             })
 
@@ -67,8 +81,29 @@
                 },
                 computed    : {},
                 methods     : {
-                    openTest : function(event){
-                        document.location.replace(`/tests/${event}`);
+                    openTest : function(event, test){
+                        let target = event.target;
+                        if(target.type == 'button' && target.innerText == 'Удалить'){
+                            return;
+                        }
+                        document.location.assign(`/tests/${test.uuid}`);
+                    },
+                    deletingTest : async function(test){
+                        let response = await fetch(`/tests/${test.uuid}`, {
+                            method: 'DELETE',
+                            mode: 'cors',
+                            cache: 'no-cache',
+                            credentials: 'same-origin'
+                        });
+
+                        if(response.status == 200){
+                            alert(`Тест "${test.name} успешно удален!"`);
+
+                            let deletedTestIndex = this.tests.findIndex(function(element){return element.id = this}, test.id);
+                            this.tests.splice(deletedTestIndex, 1);
+                        } else {
+                            alert(`Тест "${test.name} не был удален из-за неполадок на сервере!"`);
+                        }
                     }
                 }
             });
@@ -78,17 +113,25 @@
 <body>
     <nav class="navbar navbar-dark bg-primary container-fluid fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="/tests">Тесты</a>
+            <h3 id="testName">Тесты</h3>
             <button type="button" class="btn btn-light float-left" id="quit">Выйти</button>
         </div>
     </nav>
-    <!-- <div class="container" style="height: 56px;"></div> -->
     <div class="container" id="tests">
-        <div v-show="tests.length != 0">
-            <test-row v-for="test in tests" v-bind:test="test" v-on:tests_row="openTest"></test-row>
-        </div>
-        <div v-show="tests.length == 0" class="alert alert-light" role="alert">
-            Список пуст
+        <div class="container-fluid" id="tests-inner">
+            <nav class="nav nav-pills btn-toolbar justify-content-end" style="margin-bottom: 10px;">
+                <a class="btn btn-success" href="/tests/new">Добавить</a>
+            </nav>
+            <div v-show="tests.length != 0" id="tests-list">
+                <test-row 
+                    v-for="test in tests" 
+                    v-bind:test="test" 
+                    v-on:tests_row="openTest"
+                    v-on:deleting-test="deletingTest"></test-row>
+            </div>
+            <div v-show="tests.length == 0" class="alert alert-info" role="alert">
+                Список пуст
+            </div>
         </div>
     </div>
 </body>

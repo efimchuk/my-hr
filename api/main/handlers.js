@@ -58,6 +58,7 @@ async function auth_post(ctx, nest){
 
 async function auth_delete(ctx, nest){
     ctx.cookies.set('user', '0', {expires : new Date()})
+    ctx.redirect('/');
 }
 
 module.exports = {

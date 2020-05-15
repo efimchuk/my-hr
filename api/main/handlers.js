@@ -27,7 +27,7 @@ async function auth_post(ctx, nest){
             ctx.body = 'Указанное име пользователя уже занято';
             return;
         } else {
-            let newUser = Users.addNewUser(body.username, body.password);
+            let newUser = Users.addNewUser(body.username, body.password, 1);
 
             ctx.cookies.set('user', newUser.name);
             ctx.status = 301;

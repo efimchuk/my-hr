@@ -37,6 +37,10 @@ async function auth_post(ctx, nest){
     } else {
         let user = await Users.getUserByName(body.username);
 
+        if(user.role == 2){
+            user = undefined;
+        }
+
         if(user != undefined){
             if(user.password == body.password){
                 ctx.cookies.set('user', user.name);

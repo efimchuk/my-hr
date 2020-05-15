@@ -84,9 +84,18 @@
             }
         }
     </script>
+    <style>
+        #auth-form{
+            display:none; 
+            width:500px; 
+            margin-top:100px; 
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
-    <form v-on:submit.prevent="onSubmit" id="auth-form" style="display:none; width:500px; margin-top:100px;" class="container">
+    <form v-on:submit.prevent="onSubmit" id="auth-form" style="display:none; width:500px; margin-top:100px; box-shadow: 0 0 2px rgb(0, 123, 255);" class="container">
         <div class="form-group">
             <label for="nickname_authForm">Имя пользователя</label>
             <input v-model="nickname" type="type" required id="nickname_authForm" class="form-control">

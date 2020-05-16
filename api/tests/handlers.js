@@ -1,6 +1,7 @@
 const fs = require('fs');
 const Tests = require('../../lib/tests');
 const Invitations = require('../../lib/invitations');
+const Executions = require('../../lib/executions');
 
 async function tests_get(ctx, next){
     if(ctx.query.json == undefined){
@@ -14,6 +15,7 @@ async function tests_get(ctx, next){
         ctx.body = JSON.stringify(tests);
     }
 }
+
 async function tests_uuid_get(ctx, next){
     if(ctx.query.json == undefined){
         ctx.body = String(fs.readFileSync(__dirname + '/static/test.html'));
@@ -26,7 +28,7 @@ async function tests_uuid_get(ctx, next){
         } else {
             let tests = await Tests.getTestsByAuthorName(ctx.currentUser.name);
 
-            currentTest = tests.find(async function (element, index, array){
+            currentTest = tests.find(function (element, index, array){
                 if(element.uuid == this){
                     return true;
                 }
@@ -92,7 +94,82 @@ async function tests_uuid_executions_get(ctx, next){
     ctx.body = `GET /tests/:uuid/executions uuid=${ctx.params.uuid}`;
 }
 async function tests_uuid_executions_uuid_get(ctx, next){
-    ctx.body = `GET /tests/:testUUID/executions/:executionUUID testUUID=${ctx.params.testUUID} executionUUID=${ctx.params.executionUUID}`;
+    let testUUID = ctx.params.testUUID;
+    let executionUUID = ctx.params.executionUUID;
+
+    let currentTest = await Tests.getTestByUUID(testUUID);
+
+    let execution = await Executions.getExecutionByUUID(executionUUID);
+
+    if(execution != undefined){
+        if(ctx.query.json == undefined){
+            ctx.body = String(fs.readFileSync(__dirname + '/static/execution.html'));
+        } else {
+            let _execution = {
+                id : execution.id,
+                uuid : execution.uuid,
+                test_id : currentTest.id,
+                test_uuid : currentTest.uuid,
+                test_name : currentTest.name
+            };
+
+            let _exercises = [];
+
+            for(let i = 0; i < currentTest.exercises.length; i++){
+                let currentExercise = currentTest.exercises[i];
+
+                let currentAnswer = execution.answers.find(function(element){
+                    return element.id == this;
+                }, currentExercise.id);
+
+                let newExercise = {
+                    text : currentExercise.text,
+                    type : currentExercise.type,
+                    id : currentExercise.id,
+                    noData : false,
+                    rightAnswer : currentExercise.rightAnswer
+                };
+                
+                if(currentAnswer == undefined || currentAnswer.pass){
+                    newExercise.noData = (currentAnswer == undefined);
+                    if(currentAnswer != undefined){
+                        newExercise.pass = (currentAnswer.pass == undefined) ? false : currentAnswer.pass;
+                    } else {
+                        newExercise.pass = false;
+                    }
+                } else {
+                    newExercise.answer = currentAnswer.answer;
+                    if(currentExercise.variants.length){
+                        newExercise.variants = currentExercise.variants.map(function(variant){
+                            let finded = currentAnswer.selected.find(function(element){
+                                return element == this;
+                            }, variant.id);
+
+                            let newVariant = {
+                                id : variant.id,
+                                text : variant.text,
+                                correct : variant.correct,
+                                selected : finded != undefined
+                            };
+
+                            return newVariant
+                        });
+                    } else {
+                        newExercise.variants = [];
+                    }
+                }
+
+                _exercises.push(newExercise);
+            }
+
+            _execution.exercises = _exercises;
+
+            ctx.body = _execution;
+        }
+    } else {
+        ctx.status = 404;
+        ctx.body = `GET /tests/:testUUID/executions/:executionUUID testUUID=${ctx.params.testUUID} executionUUID=${ctx.params.executionUUID}`;
+    }
 }
 async function tests_uuid_invitations_get(ctx, next){
     ctx.body = `GET /tests/:uuid/invitations/ uuid=${ctx.params.uuid}`;

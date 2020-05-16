@@ -1,0 +1,174 @@
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js"></script>
+    <link 
+        rel="stylesheet" 
+        href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" 
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" 
+        crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+        window.onload = async function(event){
+
+
+            Vue.component('exercise-row', {
+                props: ['exercise', 'index'],
+                template: `
+                <div class="container exercises_row">
+                    <label>Задание {{index + 1}} 
+                        <span v-if="exercise.pass" class="badge badge-primary">Пропущено</span>
+                        <span v-if="exercise.noData" class="badge badge-secondary">Не выполнялось</span>
+                        <span v-if="exercise.status == 0" class="badge badge-success">Верно</span>
+                        <span v-if="exercise.status == 1" class="badge badge-warning">Частично верно</span>
+                        <span v-if="exercise.status == 2" class="badge badge-danger">Неверно</span>
+                    </label>
+                    <br>
+                    <label>Текст задания:</label>
+                    <div class="alert alert-secondary">{{exercise.text}}</div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text">Тип</label>
+                        </div>
+                        <select 
+                            class="custom-select"
+                            v-model="exercise.type" 
+                            disabled>
+                            <option value=0 >Ответ вводится вручную</option>
+                            <option value=1>Один вариант из нескольких</option>
+                            <option value=2>Несколько правильных вариантов</option>
+                        </select>
+                    </div>
+                    <div class="input-group mb-3" v-if="exercise.type == 0 || exercise.type == 4 || exercise.rightAnswer != ''">
+                        <div class="input-group-prepend"><span class="input-group-text">Правильный ответ</span></div>
+                        <input type="text" class="form-control" v-model="exercise.rightAnswer" disabled>
+                    </div>
+                    <div
+                        v-if="!exercise.noData && !exercise.pass" 
+                        class="container variants form-group" 
+                        v-show="exercise.type == 1 || exercise.type == 2">
+                        <label>Ответы:</label>
+                        <div class="input-group mb-3" v-for="(variant, index) in exercise.variants">
+                            <button
+                                disabled
+                                type="button" 
+                                class="btn btn-sm btn-block"
+                                :class="[
+                                        {'btn-success': variant.selected && variant.correct}, 
+                                        {'btn-primary': variant.correct && !variant.selected}, 
+                                        {'btn-danger': !variant.correct && variant.selected}, 
+                                        {'btn-secondary': !variant.correct && !variant.selected}]"
+                                >{{variant.text}}</button>
+                        </div>
+                    </div>
+                    <div 
+                        v-if="!exercise.noData && !exercise.pass"
+                        class="container variants" 
+                        v-show="exercise.type == 0 || exercise.type == 3">
+                        <label>Ответ:</label>
+                        <div 
+                            class="alert"
+                            :class="[{'alert-success' : exercise.answer == exercise.rightAnswer},{'alert-danger' : exercise.answer != exercise.rightAnswer},]">{{exercise.answer}}</div>
+                    </div>
+                </div>`
+            })
+
+            document.getElementById('quit').addEventListener('click', async function(event){
+                window.close();
+            });
+
+            let response = await fetch(document.location.pathname + '?json', {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'no-cache',
+                credentials: 'same-origin'
+            });
+
+            let execution = {};
+            
+            try{
+                execution = await response.json();
+                document.getElementById('testName').innerText = `Выполнение теста: ${execution.test_id}. ${execution.test_name}`;
+            } catch(error){
+                execution.error = 'Что-то пошло не так при загрузке содержимого';
+            }
+
+            execution.exercises.forEach(exercise => {
+                if(exercise.noData || exercise.pass){
+                    exercise.status = -1;
+                    return
+                }
+
+                switch(exercise.type){
+                    case 0:
+                        exercise.status = exercise.rightAnswer == exercise.answer ? 0 : 2;
+                        break;
+                    case 1:
+                    case 2:
+                        let correctCount = exercise.variants.filter(element => element.correct).length;
+                        let correctSelectedCount = exercise.variants.filter(element => element.correct).filter(element => element.selected).length; 
+
+                        exercise.status = correctCount == correctSelectedCount ? 0 : (correctSelectedCount == 0 ? 2 : 1);
+                        break;
+                    case 3:
+                        exercise.status = 1; 
+                    break;
+                }
+            });
+
+            let app = new Vue({
+                el : '#execution',
+                data : {
+                    uuid : execution.uuid,
+                    id : execution.id,
+                    test_id : execution.test_id,
+                    test_name : execution.test_name,
+                    exercises : execution.exercises
+                },
+                computed : {},
+                method : {}
+            });
+        }
+    </script>
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+        }
+        #execution{
+            padding-top: 73px;
+        }
+        #testName{
+            margin-bottom: .25em;
+            margin-top: .25em;
+            color: white;
+        }
+        .exercises_row{
+            box-sizing: border-box;
+            padding: 10px;
+            user-select: none;
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            margin: 10px 0 10px 0;
+        }
+        .variants{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary container-fluid fixed-top">
+        <div class="container">
+            <h3 id="testName"></h3>
+            <button 
+                type="button" 
+                class="btn btn-light float-left" 
+                id="quit">Покинуть страницу</button>
+        </div>
+    </nav>
+    <form class="container" id="execution">
+        <exercise-row v-for="(exercise, index) in exercises" 
+            v-bind:exercise="exercise"
+            v-bind:index="index"
+            v-bind:key="exercise.id"
+        ></exercise-row>
+    </form>
+</body>

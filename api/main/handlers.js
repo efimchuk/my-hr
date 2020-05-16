@@ -60,8 +60,11 @@ async function auth_post(ctx, nest){
     }
 }
 
-async function auth_delete(ctx, nest){
-    ctx.cookies.set('user', '0', {expires : new Date()})
+async function auth_delete(ctx, next){
+    let currentMoment = Date.now();
+    let LastDay = currentMoment - 1000*60*60*24;
+
+    ctx.cookies.set('user', 're', {expires : new Date(LastDay)})
     ctx.redirect('/');
 }
 

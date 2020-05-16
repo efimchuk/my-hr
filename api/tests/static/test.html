@@ -109,7 +109,7 @@
     <script defer>
         window.onload = async function(event){
             document.getElementById('quit').addEventListener('click', async function(event){
-                let response = await fetch('auth', {
+                let response = await fetch(`${document.location.origin}/auth`, {
                     method: 'DELETE',
                     mode: 'cors',
                     cache: 'no-cache',
@@ -423,8 +423,8 @@
                         }
                     },
                     viewExectuionInfo : async function(execution){
-                        let cLocation = document.location;
-                        console.log(execution);
+                        let cLocation = document.location.href;
+                        window.open(`${document.location.href}/executions/${execution.uuid}`);
                     }
                 }
             });
@@ -437,7 +437,7 @@
             <h3 id="testName"></h3>
             <button 
                 type="button" 
-                class="btn btn-light float-left" 
+                class="btn btn-primary float-left" 
                 id="quit">Выйти</button>
         </div>
     </nav>
@@ -460,21 +460,18 @@
                     <button 
                         type="button" 
                         class="btn" 
-                        v-bind:class="[{'btn-info':pages.exercises.shown}, {'btn-link' : !pages.exercises.shown}]"
-                        :disabled="pages.exercises.shown"
+                        v-bind:class="[{'btn-primary':pages.exercises.shown}, {'btn-link' : !pages.exercises.shown}]"
                         v-on:click.prevent="showPage('exercises')">Задания</button>
                     <button 
                         type="button" 
                         class="btn" 
-                        v-bind:class="[{'btn-info':pages.invitations.shown}, {'btn-link' : !pages.invitations.shown}]"
-                        :disabled="pages.invitations.shown"
+                        v-bind:class="[{'btn-primary':pages.invitations.shown}, {'btn-link' : !pages.invitations.shown}]"
                         v-on:click.prevent="showPage('invitations')"
                         v-if="mode != 0">Приглашения</button>
                     <button 
                         type="button" 
                         class="btn" 
-                        v-bind:class="[{'btn-info':pages.executions.shown}, {'btn-link' : !pages.executions.shown}]"
-                        :disabled="pages.executions.shown"
+                        v-bind:class="[{'btn-primary':pages.executions.shown}, {'btn-link' : !pages.executions.shown}]"
                         v-on:click.prevent="showPage('executions')"
                         v-if="mode != 0">Выполнения</button>
                 </div>

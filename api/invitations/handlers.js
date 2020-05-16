@@ -55,6 +55,7 @@ async function invitations_uuid_get(ctx, next){
             }
         } else {
             await Invitations.setExecutedByUUID(ctx.params.uuid);
+            await Users.deleteUser(ctx.params.uuid);
             ctx.body = String(fs.readFileSync(__dirname + '/static/end.html'));
         }
     }

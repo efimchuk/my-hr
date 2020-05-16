@@ -199,7 +199,7 @@
             }
 
             if(test.viewMode == 0){
-                test.id = '';
+                test.id = 'new';
                 test.uuid = '';
                 test.name = '';
                 test.exercises = [];
@@ -424,18 +424,21 @@
                 <div class="btn-group mr-2" role="group">
                     <button 
                         type="button" 
-                        class="btn btn-primary" 
+                        class="btn" 
+                        v-bind:class="[{'btn-info':pages.exercises.shown}, {'btn-link' : !pages.exercises.shown}]"
                         :disabled="pages.exercises.shown"
                         v-on:click.prevent="showPage('exercises')">Задания</button>
                     <button 
                         type="button" 
-                        class="btn btn-primary" 
+                        class="btn" 
+                        v-bind:class="[{'btn-info':pages.invitations.shown}, {'btn-link' : !pages.invitations.shown}]"
                         :disabled="pages.invitations.shown"
                         v-on:click.prevent="showPage('invitations')"
                         v-if="mode != 0">Приглашения</button>
                     <button 
                         type="button" 
-                        class="btn btn-primary" 
+                        class="btn" 
+                        v-bind:class="[{'btn-info':pages.executions.shown}, {'btn-link' : !pages.executions.shown}]"
                         :disabled="pages.executions.shown"
                         v-on:click.prevent="showPage('executions')"
                         v-if="mode != 0">Выполнения</button>

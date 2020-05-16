@@ -59,11 +59,6 @@
             margin: 5px 0 5px 0;
             box-shadow: 0 0 2px rgb(0, 123, 255);
         }
-        .executions{
-            padding: 10px;
-            margin: 5px 0 5px 0;
-            box-shadow: 0 0 2px rgb(0, 123, 255);
-        }
         .invitation_row{
             box-sizing: border-box;
             padding: 5px;
@@ -81,6 +76,33 @@
         .invitation_pin{
             display: inline-block;
             width: calc(49% - 2px);
+        }
+        #executions{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 0;
+        }
+        .executions{
+            padding: 10px;
+            margin: 5px 0 5px 0;
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+        }
+        .execution_row{
+            box-sizing: border-box;
+            padding: 5px;
+            user-select: none;
+        }
+        .execution_row:hover{
+            cursor: pointer;
+            background-color: rgba(0, 123, 255, 0.2);
+        }
+        .execution_uuid{
+            display: inline-block;
+            width: 30%;
+            text-align: center;
+        }
+        .execution_pin{
+            display: inline-block;
+            width: calc(56% - 1px);
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -108,7 +130,16 @@
                         <button type="button" class="btn btn-info  btn-sm" v-on:click.prevent="$emit('view-invitation', invitation)">Просмотр деталей</button>
                         <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="$emit('deleting-invitation', invitation)">Удалить</button>
                     </div>`
-            })
+            });
+
+            Vue.component('executions-row', {
+                props: ['execution'],
+                template: `
+                    <div class="execution_row" :data-uuid="execution.uuid">
+                        <div class="execution_uuid">{{ execution.uuid }}</div> <div class="execution_pin">{{ execution.pin }}</div>
+                        <button type="button" class="btn btn-info  btn-sm" v-on:click.prevent="$emit('view-execution', execution)">Просмотр деталей</button>
+                    </div>`
+            });
 
             Vue.component('exercise-row', {
                 props: ['exercise', 'index', 'disabled'],
@@ -236,7 +267,7 @@
                                 }
                             },
                     invitations : test.invitations,
-                    executions : [],
+                    executions : test.executions,
                 },
                 computed    : {
                     isDisabled: function(){
@@ -390,6 +421,10 @@
                         } else {
                             alert(`Приглашение не было деактивировано из-за неполадок на сервере!`);
                         }
+                    },
+                    viewExectuionInfo : async function(execution){
+                        let cLocation = document.location;
+                        console.log(execution);
                     }
                 }
             });
@@ -514,11 +549,12 @@
                     </div>
                 </div>
             </div>
-            <div class="container executions" v-show="pages.executions.shown && mode != 0">
-                <nav class="nav nav-pills btn-toolbar justify-content-end" style="margin-bottom: 10px; width: 100%;">
-                    <div class="btn-group mr-2" role="group">
-                    </div>
-                </nav>
+            <div class="container executions" id="executions" v-show="pages.executions.shown && mode != 0">
+                <executions-row
+                    v-for="(execution, index) in executions" 
+                    v-bind:execution="execution" 
+                    v-bind:key="execution.id"
+                    v-on:view-execution="viewExectuionInfo(execution)"></executions-row>
                 <div v-show="executions.length == 0" class="alert alert-info" role="alert">
                     Список пуст
                 </div>

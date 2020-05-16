@@ -1,0 +1,201 @@
+<head>
+    <meta charset="utf-8">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+        }
+        #exercise{ 
+            width:900px;
+            margin-top:100px;
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+        #variants{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+    </style>
+    <script>
+        window.onload = async function(event){
+            const response = await fetch(`${document.location.href}?json`, {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'no-cache',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            let _exercise = {};
+
+            try{
+                switch(response.status){
+                    case 400:
+                        _exercise.error = await response.text();
+                        break;
+                    case 200:
+                        _exercise = await response.json();
+                        break
+                }
+            } catch(error){
+                console.log(error);
+            }
+
+            for(let i = 0; i < _exercise.variants.length; i++){
+                _exercise.variants[i].selected = false;
+            }
+
+            let exercise = new Vue({
+                el : "#exercise",
+                data : {
+                    id : _exercise.id == undefined ? '' : _exercise.id,
+                    text : _exercise.text == undefined ? '' : _exercise.text,
+                    type : _exercise.type == undefined ? '' : _exercise.type,
+                    variants : _exercise.variants == undefined ? [] : _exercise.variants,
+                    error : _exercise.error == undefined ? '' : _exercise.error,
+                    answer : ''
+                },
+                computed : {
+                    disableSubmit : function(){
+                        switch(this.type){
+                            case 0 : 
+                                return this.answer == ''; 
+                                break;
+                            case 1 :
+                            case 2 :
+                                let selectedCount = this.variants.filter(function(element){return element.selected;}).length;
+                                return selectedCount == 0;
+                                break;
+                        }
+                    }
+                },
+                methods : {
+                    pass : async function(){
+                        let data = {
+                            pass : true,
+                            id : this.id
+                        }
+
+                        const response = await fetch(document.location.href, {
+                            method: 'POST',
+                            mode: 'cors',
+                            cache: 'no-cache',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+                        try{
+                            switch(response.status){
+                                case 400:
+                                    this.error = await response.text();
+                                    break;
+                                case 404: 
+                                    this.error = 'Что-то пошло не так.\nПопробуйте перезагрузить страницу.';
+                                    break;
+                                case 200:
+                                case 202:
+                                    document.location.reload();
+                                    break
+                            }
+                        } catch(error){
+                            this.error = 'Что-то пошло не так.\nПопробуйте перезагрузить страницу.'
+                        }
+                    },
+                    submit : async function(){
+                        let data = {
+                            pass : false,
+                            id : this.id,
+                            type : this.type
+                        }
+
+                        switch(this.type){
+                            case 0 :
+                            case 4 :
+                                data.answer = this.answer;
+                                break;
+                            case 1 :
+                            case 2 :
+                                let selectedVariants = this.variants.filter(element => element.selected).map(element => element.id);
+                                data.selected = selectedVariants;
+                                break;
+                        }
+
+                        const response = await fetch(document.location.href, {
+                            method: 'POST',
+                            mode: 'cors',
+                            cache: 'no-cache',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+                        try{
+                            switch(response.status){
+                                case 400:
+                                    this.error = await response.text();
+                                    break;
+                                case 404: 
+                                    this.error = 'Что-то пошло не так.\nПопробуйте перезагрузить страницу.';
+                                    break;
+                                case 200:
+                                case 202:
+                                    document.location.reload();
+                                    break
+                            }
+                        } catch(error){
+                            this.error = 'Что-то пошло не так.\nПопробуйте перезагрузить страницу.'
+                        }
+
+                    },
+                    chooseVariant : async function(variant){
+                        if(this.type == 1){
+                            this.variants.forEach(element => {
+                                element.selected = false;
+                            });
+                        }
+                        variant.selected = !variant.selected;
+                    }
+                }
+            });
+        };
+    </script>
+</head>
+<body>
+    <form v-on:submit.prevent="submit" id="exercise"class="container">
+        <div class="alert alert-secondary">{{text}}</div>
+        <textarea 
+            v-if="error == '' && type == 0"
+            class="form-control"
+            v-model="answer"
+            require></textarea>
+        <div class="container" id="variants" v-if="variants.length != 0">
+            <label>Варианты:</label>
+            <button 
+                class="btn btn-sm btn-block"
+                v-for="variant in variants"
+                v-bind:class="[{'btn-success' : variant.selected}, {'btn-secondary' : !variant.selected}]"
+                v-on:click.prevent="chooseVariant(variant)">{{variant.text}}</button>
+        </div>
+        <div v-show="error!=''" class="alert alert-danger">{{error}}</div>
+        <div class="btn-toolbar justify-content-between" style="margin-top: 10px;">
+            <button 
+                class="btn btn-primary"
+                v-on:click.prevent="pass"
+                >Пропустить</button>
+            <button 
+                type="submit" 
+                class="btn btn-success" 
+                :disabled="disableSubmit"
+                v-on:click.prevent="submit">Отправить</button>
+        </div>
+    </form>
+</body>

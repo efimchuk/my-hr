@@ -20,32 +20,21 @@
                 var authForm = new Vue({
                     el: '#auth-form',
                     data: {
-                        nickname:'',
-                        password:'',
-                        password_repeat:'',
-                        authMode: false, // true - registration, false - authorization
+                        pin : '',
                         message:''
                     },
                     computed:{
-                        submitButtonName: function(){
-                            return this.authMode?'Зарегистрироваться':'Авторизоваться';
-                        },
-                        allDataEntered: function(){
-                            return  this.nickname != '' &&
-                                    this.password != '' &&
-                                    (authMode ? this.password_repeat != '' : true)
+                        disableSubmit: function(){
+                            return this.pin == '';
                         }
                     },
                     methods: {
                         onSubmit : async function(){
-                            console.log('onSubmit');
                             let data = {
-                                username: this.nickname, 
-                                password: this.password,
-                                authMode: this.authMode
+                                pin: this.pin,
                             }
 
-                            const response = await fetch('auth', {
+                            const response = await fetch(document.location.href, {
                                 method: 'POST',
                                 mode: 'cors',
                                 cache: 'no-cache',
@@ -62,20 +51,13 @@
                                         this.message = await response.text();
                                         break;
                                     case 200:
-                                        document.location.replace('/tests');
+                                        document.location.reload();
                                         break
                                 }
                             } catch(error){
                                 console.log(error);
                             }
 
-                        },
-                        onPasswordInput : function(){
-                            if(this.password != this.password_repeat){
-                                this.message = this.authMode?'Введенные пароли не совпадают!':'';
-                            } else {
-                                this.message = '';
-                            }
                         }
                     }
                 })
@@ -97,23 +79,10 @@
 <body>
     <form v-on:submit.prevent="onSubmit" id="auth-form" style="display:none; width:500px; margin-top:100px; box-shadow: 0 0 2px rgb(0, 123, 255);" class="container">
         <div class="form-group">
-            <label for="nickname_authForm">Имя пользователя</label>
-            <input v-model="nickname" type="type" required id="nickname_authForm" class="form-control">
-            <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
-        </div>
-        <div class="form-group">
-            <label for="password_authForm">Пароль</label>
-            <input v-model="password" v-on:input="onPasswordInput" type="password" id="password_authForm" class="form-control">
-        </div>
-        <div class="form-group">
-            <label for="repeatPassword_authForm" v-show="authMode">Повторите пароль</label>
-            <input v-model="password_repeat" v-on:input="onPasswordInput" type="password" v-show="authMode" id="repeatPassword_authForm" class="form-control">
-        </div>
-        <div class="form-group form-check">
-            <input v-model="authMode" type="checkbox" id="authmode_authForm" class="form-check-input">
-            <label class="form-check-label" for="authmode_authForm">Нет аккаунта</label>
+            <label for="pin_authForm">PIN</label>
+            <input v-model="pin" type="password" id="pin_authForm" class="form-control">
         </div>
         <div v-show="message!=''" class="alert alert-danger" role="alert">{{message}}</div>
-        <button type="submit" class="btn btn-primary btn-lg btn-block">{{submitButtonName}}</button>
+        <button type="submit" class="btn btn-primary btn-lg btn-block" :disabled="disableSubmit">Начать выполнение</button>
     </form>
 </body>

@@ -123,12 +123,6 @@ async function tests_uuid_invitations_delete(ctx, next){
         ctx.body = {uuid : deleted.uuid};
     }
 }
-async function invitations_uuid_get(ctx, next){
-    ctx.body = `GET /invitations/:uuid uuid=${ctx.params.uuid}`;
-}
-async function invitations_uuid_post(ctx, next){
-    ctx.body = `POST /invitations/:uuid uuid=${ctx.params.uuid}`;
-}
 
 module.exports = {
     tests_get : tests_get,
@@ -139,7 +133,5 @@ module.exports = {
     tests_uuid_executions_uuid_get : tests_uuid_executions_uuid_get,
     tests_uuid_invitations_get : tests_uuid_invitations_get,
     tests_uuid_invitations_post : tests_uuid_invitations_post,
-    tests_uuid_invitations_delete : tests_uuid_invitations_delete,
-    invitations_uuid_get : invitations_uuid_get,
-    invitations_uuid_post : invitations_uuid_post
+    tests_uuid_invitations_delete : tests_uuid_invitations_delete
 }

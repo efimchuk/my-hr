@@ -27,8 +27,6 @@ router
     .get('/tests/:uuid/invitations', Handlers.tests_uuid_invitations_get)
     .post('/tests/:uuid/invitations', Handlers.tests_uuid_invitations_post)
     .delete('/tests/:uuid/invitations/:invUUID', Handlers.tests_uuid_invitations_delete)
-    .get('/invitations/:uuid', Handlers.invitations_uuid_get)
-    .post('/invitations/:uuid', Handlers.invitations_uuid_post)
 
 module.exports = {
     routes : () => { return router.routes(); },

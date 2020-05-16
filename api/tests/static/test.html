@@ -199,9 +199,12 @@
             }
 
             if(test.viewMode == 0){
+                test.id = '';
                 test.uuid = '';
                 test.name = '';
                 test.exercises = [];
+                test.invitations = [];
+                test.executions = [];
 
                 document.getElementById('testName').innerText = 'Тест. Создание';
             } else {
@@ -458,7 +461,7 @@
                                 v-for="(exercise, index) in exercises" 
                                 type="button" 
                                 class="btn" 
-                                v-bind:class="{'btn-info':exercise.active}"
+                                v-bind:class="[{'btn-info':exercise.active}, {'btn-link' : !exercise.active}]"
                                 v-on:click.prevent="changeCurrentExercise(index)">{{index + 1}}</button>
                         </div>
 

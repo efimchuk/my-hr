@@ -9,6 +9,7 @@ const db = require('./lib/db');
 
 const api = require('./api/main/routes');
 const tests = require('./api/tests/routes');
+const invitations = require('./api/invitations/routes');
 
 app.use(async function (ctx, next){
     const start = new Date();
@@ -22,6 +23,9 @@ app.use(api.allowedMethods());
 
 app.use(tests.routes());
 app.use(tests.allowedMethods());
+
+app.use(invitations.routes());
+app.use(invitations.allowedMethods());
 
 try {
     db.Init();

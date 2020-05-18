@@ -1,0 +1,172 @@
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js"></script>
+    <link 
+        rel="stylesheet" 
+        href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" 
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" 
+        crossorigin="anonymous">
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+        }
+        #candidat{
+            padding-top: 73px;
+
+        }
+        #candidat-inner{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+        #candidatName{
+            margin-bottom: .25em;
+            margin-top: .25em;
+            color: white;
+        }
+        #candidatInfo{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script defer>
+        window.onload = async function(event){
+            document.getElementById('quit').addEventListener('click', async function(event){
+                let response = await fetch(`${document.location.origin}/auth`, {
+                    method: 'DELETE',
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    credentials: 'same-origin'
+                });
+
+                document.location.assign('/');
+            })
+
+            document.getElementById('back').addEventListener('click', async function(event){
+                let backPath = document.location.pathname.substring(0, document.location.pathname.indexOf('/candidats')); 
+
+                document.location.assign(backPath);
+            })
+
+            // Vue --------------------
+            let response = await fetch(document.location.pathname + '?json', {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'no-cache',
+                credentials: 'same-origin'
+            });
+
+            let candidat = {};
+            
+            try{
+                candidat = await response.json();
+            } catch(error){
+                candidat.viewMode = 0;
+            }
+
+            if(candidat.viewMode == 0){
+                candidat.id = 'new';
+                candidat.phone = '';
+                candidat.name = '';
+                candidat.description = '';
+                candidat.invitation_id = '';
+
+                document.getElementById('candidatName').innerText = 'Кандидат. Создание';
+            } else {
+                document.getElementById('candidatName').innerText = `Кандидат ${candidat.id}. ${candidat.name}`;
+            }
+
+            // Vue.js -------------------
+
+            let app = new Vue({
+                el          : '#candidat',
+                data        : {
+                    id   : candidat.id,
+                    phone : candidat.phone,
+                    name : candidat.name,
+                    description : candidat.description,
+                    invitation_id : candidat.invitation_id,
+                    mode : candidat.viewMode, // 0 - new, 1 - view, 2 - edit
+                },
+                computed    : {},
+                methods     : {
+                    save : async function(){
+                        const response = await fetch(document.location.href, {
+                            method: 'POST',
+                            mode: 'cors',
+                            cache: 'no-cache',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                name : this.name,
+                                id   : this.id,
+                                description : this.description,
+                                phone : this.phone,
+                            })
+                        });
+
+                        let candidat = {};
+                        
+                        try{
+                            candidat = await response.json();
+                        } catch(error){
+                            candidat.viewMode = 0;
+                        }
+
+                        if(candidat.id != 'new'){
+                            document.location.assign(document.location.href.replace('new', candidat.id.toString()));
+                        } else {
+                            if(this.mode == 2){
+                                document.location.reload(true);
+                            }
+                        }
+                    },
+                    changeViewMode: function(){
+                        this.mode = this.mode == 1 ? 2 : 1;
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary container-fluid fixed-top">
+        <div class="container">
+            <button type="button" class="btn btn-primary" id="back">Назад</button>
+            <h3 id="candidatName"></h3>
+            <button type="button" class="btn btn-primary float-left" id="quit">Выйти</button>
+        </div>
+    </nav>
+    <form class="container" id="candidat">
+        <div class="container-fluid" id="candidat-inner">
+            <nav class="nav nav-pills btn-toolbar justify-content-between" style="margin-bottom: 10px;">
+                <div class="btn-group mr-2" role="group">
+                    <button type="button" class="btn btn-info" v-if="mode!=0" v-on:click.prevent="changeViewMode">{{mode == 1 ? 'Редактировать' : 'Отмена'}}</button>
+                    <button type="button" class="nav-item btn btn-success" v-if="mode!=1" v-on:click.prevent="save">Записать</button>
+                </div>
+            </nav>
+
+            <div class="container-fluid" id="candidatInfo">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">ФИО</span>
+                    </div>
+                    <input v-model="name" type="text" class="form-control" :disabled="mode == 1">
+                </div>
+
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Номер телефона</span>
+                    </div>
+                    <input v-model="phone" type="text" class="form-control" :disabled="mode == 1">
+                </div>
+                <div class="form-group">
+                <label for="description">Описание:</label>
+                <textarea class="form-control" id="description" rows="12" v-model="description":disabled="mode == 1"></textarea>
+                </div>
+            </div>
+        </div>
+    </form>
+</body>

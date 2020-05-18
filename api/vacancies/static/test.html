@@ -121,25 +121,13 @@
                 document.location.assign('/');
             })
 
-            // Vue --------------------
-            Vue.component('invitations-row', {
-                props: ['invitation'],
-                template: `
-                    <div class="invitation_row" :data-uuid="invitation.uuid">
-                        <div class="invitation_uuid">{{ invitation.uuid }}</div> <div class="invitation_pin">{{ invitation.pin }}</div>
-                        <button type="button" class="btn btn-info  btn-sm" v-on:click.prevent="$emit('view-invitation', invitation)">Просмотр деталей</button>
-                        <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="$emit('deleting-invitation', invitation)">Удалить</button>
-                    </div>`
-            });
+            document.getElementById('back').addEventListener('click', async function(event){
+                let backPath = document.location.pathname.substring(0, document.location.pathname.indexOf('/test')); 
 
-            Vue.component('executions-row', {
-                props: ['execution'],
-                template: `
-                    <div class="execution_row" :data-uuid="execution.uuid">
-                        <div class="execution_uuid">{{ execution.uuid }}</div> <div class="execution_pin">{{ execution.pin }}</div>
-                        <button type="button" class="btn btn-info  btn-sm" v-on:click.prevent="$emit('view-execution', execution)">Просмотр деталей</button>
-                    </div>`
-            });
+                document.location.assign(backPath);
+            })
+
+            // Vue --------------------
 
             Vue.component('exercise-row', {
                 props: ['exercise', 'index', 'disabled'],
@@ -319,7 +307,7 @@
                         }
 
                         if(test.uuid != undefined){
-                            document.location.assign(`/tests/${test.uuid}`);
+                            document.location.reload(true);
                         } else {
                             if(this.mode == 2){
                                 document.location.reload(true);
@@ -369,62 +357,6 @@
                     },
                     changeViewMode: function(){
                         this.mode = this.mode == 1 ? 2 : 1;
-                    },
-                    showPage : function(pageName){
-                        for(page in this.pages){
-                            if(page == pageName){
-                                this.pages[page].shown = true;
-                            } else {
-                                this.pages[page].shown = false;
-                            }
-                        }
-                    },
-                    creatingInvitation : async function(){
-                        let invitationsPostPath = `${document.location.pathname}/invitations`;
-
-                        const response = await fetch(invitationsPostPath, {
-                            method: 'POST',
-                            mode: 'cors',
-                            cache: 'no-cache',
-                            credentials: 'same-origin',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-
-                        try{
-                            let newInvitation = await response.json();
-
-                            this.invitations.push(newInvitation);
-                        } catch(error){
-                            alert('Не удалось создать пришлашение!');
-                        }
-                    },
-                    viewInvitationInfo : async function(invitation){
-                        let cLocation = document.location;
-                        let invitationInfo = `Адрес: ${cLocation.origin}/invitations/${invitation.uuid}\nПИН: ${invitation.pin}`;
-                        prompt(`${invitationInfo}\n\nВы можете скопировать данные из поля ввода.`, invitationInfo);
-                    },
-                    deletingInvitation : async function(invitation){
-                        let response = await fetch(`${document.location.pathname}/invitations/${invitation.uuid}`, {
-                            method: 'DELETE',
-                            mode: 'cors',
-                            cache: 'no-cache',
-                            credentials: 'same-origin'
-                        });
-
-                        if(response.status == 200){
-                            alert(`Приглашение успешно деактивировано и удалено!`);
-
-                            let deletedInvitationIndex = this.invitations.findIndex(function(element){return element.id = this}, invitation.id);
-                            this.invitations.splice(deletedInvitationIndex, 1);
-                        } else {
-                            alert(`Приглашение не было деактивировано из-за неполадок на сервере!`);
-                        }
-                    },
-                    viewExectuionInfo : async function(execution){
-                        let cLocation = document.location.href;
-                        window.open(`${document.location.href}/executions/${execution.uuid}`);
                     }
                 }
             });
@@ -434,11 +366,9 @@
 <body>
     <nav class="navbar navbar-dark bg-primary container-fluid fixed-top">
         <div class="container">
+            <button type="button" class="btn btn-primary" id="back">Назад</button>
             <h3 id="testName"></h3>
-            <button 
-                type="button" 
-                class="btn btn-primary float-left" 
-                id="quit">Выйти</button>
+            <button type="button" class="btn btn-primary float-left" id="quit">Выйти</button>
         </div>
     </nav>
     <form class="container" id="test">
@@ -455,25 +385,6 @@
                         class="nav-item btn btn-success" 
                         v-if="mode!=1" 
                         v-on:click.prevent="saveTest">Записать</button>
-                </div>
-                <div class="btn-group mr-2" role="group">
-                    <button 
-                        type="button" 
-                        class="btn" 
-                        v-bind:class="[{'btn-primary':pages.exercises.shown}, {'btn-link' : !pages.exercises.shown}]"
-                        v-on:click.prevent="showPage('exercises')">Задания</button>
-                    <button 
-                        type="button" 
-                        class="btn" 
-                        v-bind:class="[{'btn-primary':pages.invitations.shown}, {'btn-link' : !pages.invitations.shown}]"
-                        v-on:click.prevent="showPage('invitations')"
-                        v-if="mode != 0">Приглашения</button>
-                    <button 
-                        type="button" 
-                        class="btn" 
-                        v-bind:class="[{'btn-primary':pages.executions.shown}, {'btn-link' : !pages.executions.shown}]"
-                        v-on:click.prevent="showPage('executions')"
-                        v-if="mode != 0">Выполнения</button>
                 </div>
             </nav>
 
@@ -523,37 +434,6 @@
                         v-on:deleting-variant="deletingVariant"
                         v-on:set-right-variant="setRightVariat"
                     ></exercise-row>
-                </div>
-            </div>
-            <div class="container invitations" v-show="pages.invitations.shown && mode != 0">
-                <nav class="nav nav-pills btn-toolbar justify-content-end" style="margin-bottom: 10px; width: 100%;">
-                    <div class="btn-group mr-2" role="group">
-                        <button 
-                            type="button" 
-                            class="nav-item btn btn-success"
-                            v-on:click.prevent="creatingInvitation">Создать персональную ссылку</button>
-                    </div>
-                </nav>
-                <div class="container-fluid" id="invitations">
-                    <invitations-row
-                        v-for="(invitation, index) in invitations" 
-                        v-bind:invitation="invitation" 
-                        v-bind:key="invitation.id"
-                        v-on:deleting-invitation="deletingInvitation"
-                        v-on:view-invitation="viewInvitationInfo"></invitations-row>
-                    <div v-show="invitations.length == 0" class="alert alert-info" role="alert">
-                        Список пуст
-                    </div>
-                </div>
-            </div>
-            <div class="container executions" id="executions" v-show="pages.executions.shown && mode != 0">
-                <executions-row
-                    v-for="(execution, index) in executions" 
-                    v-bind:execution="execution" 
-                    v-bind:key="execution.id"
-                    v-on:view-execution="viewExectuionInfo(execution)"></executions-row>
-                <div v-show="executions.length == 0" class="alert alert-info" role="alert">
-                    Список пуст
                 </div>
             </div>
         </div>

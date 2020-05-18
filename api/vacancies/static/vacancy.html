@@ -1,0 +1,543 @@
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js"></script>
+    <link 
+        rel="stylesheet" 
+        href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" 
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" 
+        crossorigin="anonymous">
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+        }
+        #vacancy{
+            padding-top: 73px;
+
+        }
+        #vacancy-inner{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+        #vacancyName{
+            margin-bottom: .25em;
+            margin-top: .25em;
+            color: white;
+        }
+        #vacancyInfo{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+        #candidatsPage{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+        #invitedPage{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+        #executedPage{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+        #candidats-inner{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+
+        #candidats{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+        .candidats{
+            padding: 10px;
+            margin: 5px 0 5px 0;
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+        }
+        #candidats_rows{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 0;
+        }
+        .candidats_row{
+            box-sizing: border-box;
+            padding: 5px;
+            user-select: none;
+        }
+        .candidats_row:hover{
+            cursor: pointer;
+            background-color: rgba(0, 123, 255, 0.2);
+        }
+        .candidats_id{
+            display: inline-block;
+            width: 10%;
+            text-align: center;
+        }
+        .candidats_name{
+            display: inline-block;
+            width: calc(54% + 11px);
+        }
+    </style>
+    <style>
+        #invitations{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 10px;
+        }
+        .invitations{
+            margin: 5px 0 5px 0;
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 0;
+        }
+        .invitation_row{
+            box-sizing: border-box;
+            padding: 5px;
+            user-select: none;
+        }
+        .invitation_row:hover{
+            cursor: pointer;
+            background-color: rgba(0, 123, 255, 0.2);
+        }
+        .invitation_uuid{
+            display: inline-block;
+            width: 10%;
+            text-align: center;
+        }
+        .invitation_pin{
+            display: inline-block;
+            width: calc(76% + 3px);
+        }
+        #executions{
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+            padding: 0px;
+        }
+        .executions{
+            padding: 10px;
+            margin: 5px 0 5px 0;
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+        }
+        .execution_row{
+            box-sizing: border-box;
+            padding: 5px;
+            user-select: none;
+        }
+        .execution_row:hover{
+            cursor: pointer;
+            background-color: rgba(0, 123, 255, 0.2);
+        }
+        .execution_uuid{
+            display: inline-block;
+            width: 10%;
+            text-align: center;
+        }
+        .execution_pin{
+            display: inline-block;
+            width: calc(76% + 3px);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script defer>
+        window.onload = async function(event){
+            document.getElementById('quit').addEventListener('click', async function(event){
+                let response = await fetch(`${document.location.origin}/auth`, {
+                    method: 'DELETE',
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    credentials: 'same-origin'
+                });
+
+                document.location.assign('/');
+            })
+
+            document.getElementById('back').addEventListener('click', async function(event){
+                document.location.assign(`${document.location.origin}/vacancies`);
+            })
+
+            // Vue --------------------
+            let response = await fetch(document.location.pathname + '?json', {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'no-cache',
+                credentials: 'same-origin'
+            });
+
+            let vacancy = {};
+            
+            try{
+                vacancy = await response.json();
+            } catch(error){
+                vacancy.viewMode = 0;
+            }
+
+            if(vacancy.viewMode == 0){
+                vacancy.id = 'new';
+                vacancy.uuid = '';
+                vacancy.name = '';
+                vacancy.description = '';
+                vacancy.experience_time = '';
+
+                document.getElementById('vacancyName').innerText = 'Вакансия. Создание';
+            } else {
+                document.getElementById('vacancyName').innerText = `Вакансия ${vacancy.id}. ${vacancy.name}`;
+            }
+
+            // Vue.js -------------------
+
+            Vue.component('candidats-row', {
+                props: ['candidat'],
+                template: `
+                    <div class="candidats_row"v-on:click="$emit('open-candidat', $event, candidat)">
+                        <div class="candidats_id">{{ candidat.id }}</div> <div class="candidats_name">{{ candidat.name }}</div>
+                        <div class="btn-group">
+                            <button 
+                                type="button" 
+                                class="btn btn-info btn-sm"
+                                :disabled="candidat.invited || candidat.executed" 
+                                v-on:click.prevent="$emit('create-invitation', candidat)">Сгенерировать ссылку</button>
+                            <button 
+                                type="button" 
+                                class="btn btn-danger btn-sm" 
+                                :disabled="!candidat.invited || candidat.executed" 
+                                v-on:click.prevent="$emit('delete-invitation', candidat)">Удалить ссылку</button>
+                        </div>
+                        <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="$emit('delete-candidat', candidat)">Удалить</button>
+                    </div>`
+            })
+
+            Vue.component('invitations-row', {
+                props: ['invitation'],
+                template: `
+                    <div class="invitation_row" :data-uuid="invitation.uuid">
+                        <div class="invitation_uuid">{{ invitation.invited.id }}</div> <div class="invitation_pin">{{ invitation.invited.name }}</div>
+                        <button type="button" class="btn btn-info  btn-sm" v-on:click.prevent="$emit('view-invitation', invitation)">Просмотр деталей</button>
+                    </div>`
+            });
+
+            Vue.component('executions-row', {
+                props: ['execution'],
+                template: `
+                    <div class="execution_row" :data-uuid="execution.uuid">
+                        <div class="execution_uuid">{{ execution.executed.id }}</div> <div class="execution_pin">{{ execution.executed.name }}</div>
+                        <button type="button" class="btn btn-info  btn-sm" v-on:click.prevent="$emit('view-execution', execution)">Просмотр деталей</button>
+                    </div>`
+            });
+
+            for(let i = 0; i < vacancy.candidats.length; i++){
+                let candidat = vacancy.candidats[i];
+
+                if(candidat.executed == undefined){
+                    candidat.executed = false;
+                }
+
+                if(candidat.invited == undefined){
+                    candidat.invited = false;
+                }
+            }
+
+            let app = new Vue({
+                el          : '#vacancy',
+                data        : {
+                    id   : vacancy.id,
+                    uuid : vacancy.uuid,
+                    name : vacancy.name,
+                    description : vacancy.description,
+                    experience_time : vacancy.experience_time,
+                    mode : vacancy.viewMode, // 0 - new, 1 - view, 2 - edit
+                    test : {
+                        id : vacancy.test_id,
+                        uuid : vacancy.test_uuid == undefined ? '' : vacancy.test_uuid,
+                        name : vacancy.test_name == undefined ? '' : vacancy.test_name
+                    },
+                    candidats : vacancy.candidats,
+                    invitations : vacancy.invitations,
+                    executions : vacancy.executions,
+                    pages : {
+                                information : {
+                                    shown : true
+                                },
+                                candidats : {
+                                    shown : false
+                                },
+                                invited : {
+                                    shown : false
+                                },
+                                executed : {
+                                    shown : false
+                                }
+                            },
+                },
+                computed    : {
+                    testDefined : function(){
+                        return this.test.uuid != '';
+                    },
+                    testUndefined : function(){
+                        return this.test.uuid == '';
+                    }
+                },
+                methods     : {
+                    save : async function(){
+                        const response = await fetch('/vacancies', {
+                            method: 'POST',
+                            mode: 'cors',
+                            cache: 'no-cache',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                name : this.name,
+                                id   : this.id,
+                                uuid : this.uuid,
+                                description : this.description,
+                                experience_time : this.experience_time,
+                            })
+                        });
+
+                        let vacancy = {};
+                        
+                        try{
+                            vacancy = await response.json();
+                        } catch(error){
+                            vacancy.viewMode = 0;
+                        }
+
+                        if(vacancy.uuid != undefined){
+                            document.location.assign(`/vacancies/${vacancy.uuid}`);
+                        } else {
+                            if(this.mode == 2){
+                                document.location.reload(true);
+                            }
+                        }},
+                    changeViewMode: function(){
+                        this.mode = this.mode == 1 ? 2 : 1;
+                    },
+                    showPage : function(pageName){
+                        for(page in this.pages){
+                            if(page == pageName){
+                                this.pages[page].shown = true;
+                            } else {
+                                this.pages[page].shown = false;
+                            }
+                        }
+                    },
+                    openTest : function(){
+                        document.location.assign(`${document.location.href}/test`);
+                    },
+                    createTest : function(){
+                        document.location.assign(`${document.location.href}/test`);
+                    },
+                    deleteTest : async function(){
+                        let response = await fetch(`${document.location.href}/test`, {
+                            method: 'DELETE',
+                            mode: 'cors',
+                            cache: 'no-cache',
+                            credentials: 'same-origin'
+                        });
+
+                        if(response.status == 202){
+                            this.test.id = '';
+                            this.test.uuid = '';
+                            this.test.name = '';
+                        }
+                    },
+                    deleteCandidat : async function(candidat){
+                        let response = await fetch(`${document.location.href}/candidats/${candidat.id}`, {
+                            method: 'DELETE',
+                            mode: 'cors',
+                            cache: 'no-cache',
+                            credentials: 'same-origin'
+                        });
+
+                        if(response.status == 200){
+                            let deletedCandidatID = await response.text();
+
+                            this.candidats = this.candidats.filter(function(candidat){
+                                return candidat.id != this;
+                            }, deletedCandidatID);
+                        }
+                    },
+                    createCandidat : async function(){
+                        document.location.assign(`${document.location.href}/candidats/new`);
+                    },
+                    openCandidat : async function(event, candidat){
+                        let target = event.target;
+                        if(target.type == 'button' && (target.innerText == 'Удалить' || target.innerText == 'Сгенерировать ссылку' || target.innerText == 'Удалить ссылку')){
+                            return;
+                        }
+                        document.location.assign(`${document.location.href}/candidats/${candidat.id}`);
+                    },
+                    createInvitation : async function(candidat){
+                        let response = await fetch(`${document.location.href}/candidats/${candidat.id}/invitation`, {
+                            method: 'POST',
+                            mode: 'cors',
+                            cache: 'no-cache',
+                            credentials: 'same-origin'
+                        });
+
+                        if(response.status == 201){
+                            let invitation = await response.json();
+
+                            candidat.invited = true;
+                            candidat.invitation_id = invitation.id;
+                            candidat.invitation = invitation;
+
+                            invitation.invited = candidat;
+
+                            this.invitations.push(invitation);
+                        }
+                    },
+                    deleteInvitation : async function(candidat){
+                        let response = await fetch(`${document.location.href}/candidats/${candidat.id}/invitation`, {
+                            method: 'DELETE',
+                            mode: 'cors',
+                            cache: 'no-cache',
+                            credentials: 'same-origin'
+                        });
+
+                        if(response.status == 202){
+                            let deletedInvitation = await response.json();
+
+                            candidat.invited = false;
+                            candidat.invitation_id = '';
+                            candidat.invitation = {};
+
+                            // invitation.candidat = candidat;
+
+                            for(let i = 0; i < this.invitations.length; i++){
+                                if(this.invitations[i].id == deletedInvitation.id){
+                                    this.splice(i, 1);
+                                }
+                            }
+                        }
+                    },
+                    viewInvitationInfo : async function(invitation){
+                        let cLocation = document.location;
+                        let invitationInfo = `Адрес: ${cLocation.origin}/invitations/${invitation.uuid}\nПИН: ${invitation.pin}`;
+                        prompt(`${invitationInfo}\n\nВы можете скопировать данные из поля ввода.`, invitationInfo);
+                    },
+                    viewExectuionInfo : async function(execution){
+                        let cLocation = document.location.href;
+                        window.open(`${document.location.pathname}/candidats/${execution.executed.id}/execution`);
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary container-fluid fixed-top">
+        <div class="container">
+            <button type="button" class="btn btn-primary" id="back">Назад</button>
+            <h3 id="vacancyName"></h3>
+            <button type="button" class="btn btn-primary float-left" id="quit">Выйти</button>
+        </div>
+    </nav>
+    <form class="container" id="vacancy">
+        <div class="container-fluid" id="vacancy-inner">
+            <nav class="nav nav-pills btn-toolbar justify-content-between" style="margin-bottom: 10px;">
+                <div class="btn-group mr-2" role="group">
+                    <button type="button" class="btn btn-info" v-if="mode!=0" v-on:click.prevent="changeViewMode">{{mode == 1 ? 'Редактировать' : 'Отмена'}}</button>
+                    <button type="button" class="nav-item btn btn-success" v-if="mode!=1" v-on:click.prevent="save">Записать</button>
+                </div>
+
+                <div class="btn-group mr-2" role="group" aria-label="Second group">
+                    <button type="button" class="btn btn-primary" v-if="testUndefined" v-on:click.prevent="createTest">Добавить тест</button>
+                    <button type="button" class="btn btn-info" v-if="testDefined" v-on:click.prevent="openTest">Открыть тест</button>
+                    <!-- <button type="button" class="btn btn-danger" v-if="testDefined" v-on:click.prevent="deleteTest">Удалить тест</button> -->
+                </div>
+                
+                <div class="btn-group mr-2" role="group" style="box-shadow: 0 0 2px rgb(0, 123, 255); border-radius: 5px;">
+                    <button type="button" class="btn" 
+                        v-bind:class="[{'btn-primary':pages.information.shown}, {'btn-link' : !pages.information.shown}]"
+                        v-on:click.prevent="showPage('information')">Информация</button>
+                    <button type="button" class="btn" 
+                        v-bind:class="[{'btn-primary':pages.candidats.shown}, {'btn-link' : !pages.candidats.shown}]"
+                        v-on:click.prevent="showPage('candidats')"
+                        v-if="mode != 0">Кандидаты</button>
+                    <button type="button" class="btn" 
+                        v-bind:class="[{'btn-primary':pages.invited.shown}, {'btn-link' : !pages.invited.shown}]"
+                        v-on:click.prevent="showPage('invited')"
+                        v-if="mode != 0">Приглашенные</button>
+                    <button type="button" class="btn" 
+                        v-bind:class="[{'btn-primary':pages.executed.shown}, {'btn-link' : !pages.executed.shown}]"
+                        v-on:click.prevent="showPage('executed')"
+                        v-if="mode != 0">Выполнившие</button>
+                </div>
+            </nav>
+
+            <div class="container-fluid" id="vacancyInfo" v-show="pages.information.shown">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Наименование</span>
+                    </div>
+                    <input v-model="name" type="text" class="form-control" :disabled="mode == 1">
+                </div>
+
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Опыт работы (от)</span>
+                    </div>
+                    <input v-model="experience_time" type="text" class="form-control" :disabled="mode == 1">
+                </div>
+                <div class="form-group">
+                <label for="description">Описание:</label>
+                <textarea class="form-control" id="description" rows="12" v-model="description":disabled="mode == 1"></textarea>
+                </div>
+            </div>
+
+            <div class="container-fluid" id="candidatsPage" v-show="pages.candidats.shown">
+                <nav class="nav nav-pills btn-toolbar justify-content-end" style="margin-bottom: 10px; width: 100%;">
+                    <div class="btn-group mr-2" role="group">
+                        <button type="button" class="nav-item btn btn-success" v-on:click.prevent="createCandidat">Добавить кандидата</button>
+                    </div>
+                </nav>
+                <div class="container-fluid" id="candidats_rows">
+                    <candidats-row
+                        v-for="candidat in candidats" 
+                        v-bind:candidat="candidat"
+                        v-bind:key="candidat.id"
+                        v-on:open-candidat="openCandidat"
+                        v-on:delete-candidat="deleteCandidat"
+                        v-on:create-invitation="createInvitation"
+                        v-on:delete-invitation="deleteInvitation"></candidats-row>
+                </div>
+                <div v-show="candidats.length == 0" class="alert alert-info" role="alert" v-if="pages.candidats.shown">
+                    Список пуст
+                </div>
+            </div>
+<!-- 
+            <div class="container-fluid" id="invitedPage" v-show="pages.invited.shown">
+                Пришлашения для прохождения:
+                <div class="container-fluid" id="invited-inner">
+                    <invited-row></invited-row>
+                </div>
+            </div> -->
+
+            <div class="container invitations" v-show="pages.invited.shown && mode != 0">
+                <invitations-row
+                    v-for="(invitation, index) in invitations" 
+                    v-bind:invitation="invitation" 
+                    v-bind:key="invitation.id"
+                    v-on:view-invitation="viewInvitationInfo"></invitations-row>
+            </div>
+            <div v-show="invitations.length == 0" class="alert alert-info" role="alert" v-if="pages.invited.shown && mode != 0">
+                Список пуст
+            </div>
+
+            <!-- <div class="container-fluid" id="executedPage" v-show="pages.executed.shown">
+                Выполнения:
+                <div class="container-fluid" id="executed-inner">
+                    <executed-row></executed-row>
+                </div>
+            </div> -->
+
+            <div class="container executions" id="executions" v-show="pages.executed.shown && mode != 0">
+                <executions-row
+                    v-for="(execution, index) in executions" 
+                    v-bind:execution="execution" 
+                    v-bind:key="execution.id"
+                    v-on:view-execution="viewExectuionInfo(execution)"></executions-row>
+            </div>
+            <div v-show="executions.length == 0" class="alert alert-info" role="alert" v-if="pages.executed.shown && mode != 0">
+                Список пуст
+            </div>
+        </div>
+    </form>
+</body>

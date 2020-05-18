@@ -5,7 +5,7 @@ async function main_get(ctx, next){
     let authorName = ctx.cookies.get('user');
 
     if(authorName != undefined){
-        ctx.redirect('/tests');
+        ctx.redirect('/vacancies');
         return;
     }
 
@@ -31,7 +31,7 @@ async function auth_post(ctx, nest){
 
             ctx.cookies.set('user', newUser.name);
             ctx.status = 301;
-            ctx.redirect('/tests');
+            ctx.redirect('/vacancies');
             return;
         }
     } else {

@@ -59,17 +59,19 @@ async function tests_uuid_get(ctx, next){
         }
     }
 }
+
 async function tests_post(ctx, next){
     let test = ctx.request.body;
     if(test.id == undefined || test.id == 'new'){
         test = await Tests.addTest(ctx.request.body, ctx.currentUser.name);
     } else {
-        Test = await Tests.editTest(ctx.request.body);
+        await Tests.editTest(ctx.request.body);
     }
 
     test.viewMode = 1;
     ctx.body = test;
 }
+
 async function tests_uuid_delete(ctx, next){
     let tests = await Tests.getTestsByAuthorName(ctx.currentUser.name);
 
@@ -90,9 +92,11 @@ async function tests_uuid_delete(ctx, next){
         ctx.redirect('back');
     }
 }
+
 async function tests_uuid_executions_get(ctx, next){
     ctx.body = `GET /tests/:uuid/executions uuid=${ctx.params.uuid}`;
 }
+
 async function tests_uuid_executions_uuid_get(ctx, next){
     let testUUID = ctx.params.testUUID;
     let executionUUID = ctx.params.executionUUID;
@@ -171,9 +175,11 @@ async function tests_uuid_executions_uuid_get(ctx, next){
         ctx.body = `GET /tests/:testUUID/executions/:executionUUID testUUID=${ctx.params.testUUID} executionUUID=${ctx.params.executionUUID}`;
     }
 }
+
 async function tests_uuid_invitations_get(ctx, next){
     ctx.body = `GET /tests/:uuid/invitations/ uuid=${ctx.params.uuid}`;
 }
+
 async function tests_uuid_invitations_post(ctx, next){
     let testId = ctx.params.uuid;
 
@@ -188,6 +194,7 @@ async function tests_uuid_invitations_post(ctx, next){
         ctx.body = invitation;
     }
 }
+
 async function tests_uuid_invitations_delete(ctx, next){
     let uuid = ctx.params.invUUID;
 

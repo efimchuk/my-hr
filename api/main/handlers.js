@@ -45,7 +45,7 @@ async function auth_post(ctx, nest){
             if(user.password == body.password){
                 ctx.cookies.set('user', user.name);
                 ctx.status = 301;
-                ctx.redirect('/tests');
+                ctx.redirect('/vacancies');
                 return;
             } else {
                 ctx.status = 400;

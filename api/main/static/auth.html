@@ -62,7 +62,13 @@
                                         this.message = await response.text();
                                         break;
                                     case 200:
-                                        document.location.replace('/tests');
+                                        if(this.authMode){
+                                            alert('Регистрация прошла успешно!');
+                                            this.authMode = false;
+                                            // this.message = 'Регистрация прошла успешно!';
+                                        } else {
+                                            document.location.assign('/');
+                                        }
                                         break
                                 }
                             } catch(error){

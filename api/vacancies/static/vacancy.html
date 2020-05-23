@@ -102,7 +102,7 @@
         }
         .invitation_pin{
             display: inline-block;
-            width: calc(76% + 3px);
+            width: calc(70% - 8px);
         }
         #executions{
             box-shadow: 0 0 2px rgb(0, 123, 255);
@@ -194,7 +194,7 @@
                 template: `
                     <div class="candidats_row"v-on:click="$emit('open-candidat', $event, candidat)">
                         <div class="container" style="width:calc(60% - 4.5px); margin:0; display:inline-block">
-                            <div class="candidats_id">{{ candidat.id }}</div> <div class="candidats_name">{{ candidat.name }}</div>
+                            {{ candidat.id }}. {{ candidat.name }} <span class="badge badge-primary" v-if="candidat.invited">Приглашение оформлено</span><span class="badge badge-success" v-if="candidat.executed">Выполнил тест</span>
                         </div>
                         <div class="container" style="width:40%; margin:0;display:inline-block; text-align:right; padding:0;">
                             <button 
@@ -218,6 +218,7 @@
                     <div class="invitation_row" :data-uuid="invitation.uuid">
                         <div class="invitation_uuid">{{ invitation.invited.id }}</div> <div class="invitation_pin">{{ invitation.invited.name }}</div>
                         <button type="button" class="btn btn-info  btn-sm" v-on:click.prevent="$emit('view-invitation', invitation)">Просмотр деталей</button>
+                        <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="$emit('delete-invitation', invitation.invited)">Удалить</button>
                     </div>`
             });
 
@@ -423,7 +424,7 @@
 
                             for(let i = 0; i < this.invitations.length; i++){
                                 if(this.invitations[i].id == deletedInvitation.id){
-                                    this.splice(i, 1);
+                                    this.invitations.splice(i, 1);
                                 }
                             }
                         }
@@ -546,7 +547,8 @@
                     v-for="(invitation, index) in invitations" 
                     v-bind:invitation="invitation" 
                     v-bind:key="invitation.id"
-                    v-on:view-invitation="viewInvitationInfo"></invitations-row>
+                    v-on:view-invitation="viewInvitationInfo"
+                    v-on:delete-invitation="deleteInvitation"></invitations-row>
             </div>
             <div v-show="invitations.length == 0" class="alert alert-info" role="alert" v-if="pages.invited.shown && mode != 0">
                 Список пуст

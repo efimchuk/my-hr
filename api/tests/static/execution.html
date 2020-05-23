@@ -6,6 +6,12 @@
         integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" 
         crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <style>
+        .tags{
+            padding: 0 0 10px 0;
+            user-select: none;
+        }
+    </style>
     <script>
         window.onload = async function(event){
 
@@ -123,7 +129,27 @@
                     test_name : execution.test_name,
                     exercises : execution.exercises
                 },
-                computed : {},
+                computed : {
+                    passedExercises : function(){
+                        let passed = this.exercises.filter(element => element.pass).length;
+
+                        return passed;
+                    },
+                    notExecutedExercises : function(){
+                        let notExecuted = this.exercises.filter(element => element.noData).length;
+
+                        return notExecuted;
+                    },
+                    partExecutedExercises : function(){
+                        return this.exercises.filter(element => element.status == 1).length;
+                    },
+                    executedExercises : function(){
+                        return this.exercises.filter(element => element.status == 0).length;
+                    },
+                    wrongExercises : function(){
+                        return this.exercises.filter(element => element.status == 2).length;
+                    },
+                },
                 method : {}
             });
         }
@@ -165,6 +191,13 @@
         </div>
     </nav>
     <form class="container" id="execution">
+        <div class="container-fluid tags">
+            <span class="badge badge-success" v-if="executedExercises != ''">Верно: {{executedExercises}}</span>
+            <span class="badge badge-warning" v-if="partExecutedExercises != ''">Частично верно: {{partExecutedExercises}}</span>
+            <span class="badge badge-danger" v-if="wrongExercises != ''">Неверно: {{wrongExercises}}</span>
+            <span class="badge badge-secondary" v-if="notExecutedExercises != ''">Не выполнялось: {{notExecutedExercises}}</span>
+            <span class="badge badge-primary" v-if="passedExercises != ''">Пропущено: {{passedExercises}}</span>
+        </div>
         <exercise-row v-for="(exercise, index) in exercises" 
             v-bind:exercise="exercise"
             v-bind:index="index"

@@ -132,6 +132,12 @@
             width: calc(76% + 3px);
         }
     </style>
+    <style>
+        .tags{
+            padding: 0 0 10px 0;
+            user-select: none;
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script defer>
         window.onload = async function(event){
@@ -178,7 +184,7 @@
 
                 document.getElementById('vacancyName').innerText = 'Вакансия. Создание';
             } else {
-                document.getElementById('vacancyName').innerText = `Вакансия ${vacancy.id}. ${vacancy.name}`;
+                document.getElementById('vacancyName').innerText = `Вакансия: ${vacancy.name}`;
             }
 
             // Vue.js -------------------
@@ -234,6 +240,15 @@
                 }
             }
 
+            function getDATE(dateString){
+                let res = new Date(dateString);
+
+                let date = res.getDate() < 10 ? '0' + res.getDate() : res.getDate();
+                let month = res.getMonth() < 10 ? '0' + res.getMonth() : res.getMonth();
+
+                return `${date}.${month}.${res.getFullYear()}`;
+            }
+            
             let app = new Vue({
                 el          : '#vacancy',
                 data        : {
@@ -251,6 +266,7 @@
                     candidats : vacancy.candidats,
                     invitations : vacancy.invitations,
                     executions : vacancy.executions,
+                    creation_time_string : vacancy.creation_time == undefined ? '' : getDATE(vacancy.creation_time),
                     pages : {
                                 information : {
                                     shown : true
@@ -433,6 +449,12 @@
         </div>
     </nav>
     <form class="container" id="vacancy">
+        <div class="container-fluid tags">
+            <span class="badge badge-primary" v-if="creation_time_string != ''">Дата создания: {{creation_time_string}}</span>
+            <span class="badge badge-info" v-if="candidats.length">Всего кандидатов: {{candidats.length}}</span>
+            <span class="badge badge-secondary" v-if="invitations.length">Всего приглашений: {{invitations.length}}</span>
+            <span class="badge badge-success" v-if="executions.length">Всего выполнений: {{executions.length}}</span>
+        </div>
         <div class="container-fluid" id="vacancy-inner">
             <nav class="nav nav-pills btn-toolbar justify-content-between" style="margin-bottom: 10px;">
                 <div class="btn-group mr-2" role="group">
@@ -481,7 +503,7 @@
                 </div>
                 <div class="form-group">
                 <label for="description">Описание:</label>
-                <textarea class="form-control" id="description" rows="12" v-model="description":disabled="mode == 1"></textarea>
+                <textarea class="form-control" id="description" rows="10" v-model="description":disabled="mode == 1"></textarea>
                 </div>
             </div>
 

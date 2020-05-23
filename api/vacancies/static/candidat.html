@@ -28,6 +28,12 @@
             padding: 10px;
         }
     </style>
+    <style>
+        .tags{
+            padding: 0 0 10px 0;
+            user-select: none;
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script defer>
         window.onload = async function(event){
@@ -76,6 +82,15 @@
                 document.getElementById('candidatName').innerText = `Кандидат ${candidat.id}. ${candidat.name}`;
             }
 
+            function getDATE(dateString){
+                let res = new Date(dateString);
+
+                let date = res.getDate() < 10 ? '0' + res.getDate() : res.getDate();
+                let month = res.getMonth() < 10 ? '0' + res.getMonth() : res.getMonth();
+
+                return `${date}.${month}.${res.getFullYear()}`;
+            }
+
             // Vue.js -------------------
 
             let app = new Vue({
@@ -87,6 +102,7 @@
                     description : candidat.description,
                     invitation_id : candidat.invitation_id,
                     mode : candidat.viewMode, // 0 - new, 1 - view, 2 - edit
+                    creation_time_string : candidat.creation_time == undefined ? '' : getDATE(candidat.creation_time),
                 },
                 computed    : {},
                 methods     : {
@@ -140,6 +156,9 @@
         </div>
     </nav>
     <form class="container" id="candidat">
+        <div class="container-fluid tags">
+            <span class="badge badge-primary" v-if="creation_time_string != ''">Дата создания: {{creation_time_string}}</span>
+        </div>
         <div class="container-fluid" id="candidat-inner">
             <nav class="nav nav-pills btn-toolbar justify-content-between" style="margin-bottom: 10px;">
                 <div class="btn-group mr-2" role="group">

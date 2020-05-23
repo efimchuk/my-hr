@@ -105,6 +105,12 @@
             width: calc(56% - 1px);
         }
     </style>
+    <style>
+        .tags{
+            padding: 0 0 10px 0;
+            user-select: none;
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script defer>
         window.onload = async function(event){
@@ -235,6 +241,15 @@
                 test.exercises[0].active = true;
             }
 
+            function getDATE(dateString){
+                let res = new Date(dateString);
+
+                let date = res.getDate() < 10 ? '0' + res.getDate() : res.getDate();
+                let month = res.getMonth() < 10 ? '0' + res.getMonth() : res.getMonth();
+
+                return `${date}.${month}.${res.getFullYear()}`;
+            }
+
             let app = new Vue({
                 el          : '#test',
                 data        : {
@@ -243,6 +258,7 @@
                     name : test.name,
                     exercises : test.exercises,
                     mode : test.viewMode, // 0 - new, 1 - view, 2 - edit
+                    creation_time_string : test.creation_time == undefined ? '' : getDATE(test.creation_time),
                     pages : {
                                 exercises : {
                                     shown : true
@@ -372,6 +388,9 @@
         </div>
     </nav>
     <form class="container" id="test">
+        <div class="container-fluid tags">
+            <span class="badge badge-primary" v-if="creation_time_string != ''">Дата создания: {{creation_time_string}}</span>
+        </div>
         <div class="container-fluid" id="test-inner">
             <nav class="nav nav-pills btn-toolbar justify-content-between" style="margin-bottom: 10px;">
                 <div class="btn-group mr-2" role="group">

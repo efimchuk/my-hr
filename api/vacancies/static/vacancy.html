@@ -193,20 +193,22 @@
                 props: ['candidat'],
                 template: `
                     <div class="candidats_row"v-on:click="$emit('open-candidat', $event, candidat)">
-                        <div class="candidats_id">{{ candidat.id }}</div> <div class="candidats_name">{{ candidat.name }}</div>
-                        <div class="btn-group">
+                        <div class="container" style="width:calc(60% - 4.5px); margin:0; display:inline-block">
+                            <div class="candidats_id">{{ candidat.id }}</div> <div class="candidats_name">{{ candidat.name }}</div>
+                        </div>
+                        <div class="container" style="width:40%; margin:0;display:inline-block; text-align:right; padding:0;">
                             <button 
                                 type="button" 
                                 class="btn btn-info btn-sm"
-                                :disabled="candidat.invited || candidat.executed" 
+                                v-if="!(candidat.invited || candidat.executed)" 
                                 v-on:click.prevent="$emit('create-invitation', candidat)">Сгенерировать ссылку</button>
                             <button 
                                 type="button" 
                                 class="btn btn-danger btn-sm" 
-                                :disabled="!candidat.invited || candidat.executed" 
+                                v-if="!(!candidat.invited || candidat.executed)" 
                                 v-on:click.prevent="$emit('delete-invitation', candidat)">Удалить ссылку</button>
+                            <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="$emit('delete-candidat', candidat)">Удалить</button>
                         </div>
-                        <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="$emit('delete-candidat', candidat)">Удалить</button>
                     </div>`
             })
 
@@ -451,9 +453,9 @@
     <form class="container" id="vacancy">
         <div class="container-fluid tags">
             <span class="badge badge-primary" v-if="creation_time_string != ''">Дата создания: {{creation_time_string}}</span>
-            <span class="badge badge-info" v-if="candidats.length">Всего кандидатов: {{candidats.length}}</span>
+            <!-- <span class="badge badge-info" v-if="candidats.length">Всего кандидатов: {{candidats.length}}</span>
             <span class="badge badge-secondary" v-if="invitations.length">Всего приглашений: {{invitations.length}}</span>
-            <span class="badge badge-success" v-if="executions.length">Всего выполнений: {{executions.length}}</span>
+            <span class="badge badge-success" v-if="executions.length">Всего выполнений: {{executions.length}}</span> -->
         </div>
         <div class="container-fluid" id="vacancy-inner">
             <nav class="nav nav-pills btn-toolbar justify-content-between" style="margin-bottom: 10px;">
@@ -475,15 +477,21 @@
                     <button type="button" class="btn" 
                         v-bind:class="[{'btn-primary':pages.candidats.shown}, {'btn-link' : !pages.candidats.shown}]"
                         v-on:click.prevent="showPage('candidats')"
-                        v-if="mode != 0">Кандидаты</button>
+                        v-if="mode != 0">Кандидаты <span
+                            class="badge" 
+                            v-bind:class="[{'badge-light':pages.candidats.shown}, {'badge-primary' : !pages.candidats.shown}]">{{candidats.length}}</span></button>
                     <button type="button" class="btn" 
                         v-bind:class="[{'btn-primary':pages.invited.shown}, {'btn-link' : !pages.invited.shown}]"
                         v-on:click.prevent="showPage('invited')"
-                        v-if="mode != 0">Приглашенные</button>
+                        v-if="mode != 0">Приглашенные <span 
+                            class="badge"
+                            v-bind:class="[{'badge-light':pages.invited.shown}, {'badge-primary' : !pages.invited.shown}]">{{invitations.length}}</span></button>
                     <button type="button" class="btn" 
                         v-bind:class="[{'btn-primary':pages.executed.shown}, {'btn-link' : !pages.executed.shown}]"
                         v-on:click.prevent="showPage('executed')"
-                        v-if="mode != 0">Выполнившие</button>
+                        v-if="mode != 0">Выполнившие <span 
+                            class="badge"
+                            v-bind:class="[{'badge-light':pages.executed.shown}, {'badge-primary' : !pages.executed.shown}]">{{executions.length}}</span></button>
                 </div>
             </nav>
 

@@ -131,17 +131,19 @@ async function tests_uuid_executions_uuid_get(ctx, next){
                     type : currentExercise.type,
                     id : currentExercise.id,
                     noData : false,
-                    rightAnswer : currentExercise.rightAnswer
+                    rightAnswer : currentExercise.rightAnswer,
                 };
                 
                 if(currentAnswer == undefined || currentAnswer.pass){
                     newExercise.noData = (currentAnswer == undefined);
+
                     if(currentAnswer != undefined){
                         newExercise.pass = (currentAnswer.pass == undefined) ? false : currentAnswer.pass;
                     } else {
                         newExercise.pass = false;
                     }
                 } else {
+                    newExercise.executing_time = Math.round(currentAnswer.executing_time)
                     newExercise.answer = currentAnswer.answer;
                     if(currentExercise.variants.length){
                         newExercise.variants = currentExercise.variants.map(function(variant){

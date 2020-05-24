@@ -26,6 +26,7 @@
                         <span v-if="exercise.status == 0" class="badge badge-success">Верно</span>
                         <span v-if="exercise.status == 1" class="badge badge-warning">Частично верно</span>
                         <span v-if="exercise.status == 2" class="badge badge-danger">Неверно</span>
+                        <span class="badge badge-info" v-if="!exercise.noData">Время выполнения: {{exercise.executing_time}}с </span>
                     </label>
                     <br>
                     <label>Текст задания:</label>

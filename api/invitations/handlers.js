@@ -50,6 +50,10 @@ async function invitations_uuid_get(ctx, next){
             if(ctx.query.json == undefined){
                 ctx.body = String(fs.readFileSync(__dirname + '/static/execution.html'));
             } else {
+                if(!(await Answers.existsExecutedExercise(ctx.params.uuid, exercise.id))){
+                    await Answers.createExecutedExercise(ctx.params.uuid, exercise.id);
+                }
+                
                 ctx.status = 200;
                 ctx.body = exercise;
             }
@@ -95,6 +99,10 @@ async function invitations_uuid_post(ctx, next){
         let _exercise = await getCurrentExercise(ctx.params.uuid);
         
         if(_exercise != undefined){
+            if(!(await Answers.existsExecutedExercise(ctx.params.uuid, _exercise.id))){
+                await Answers.createExecutedExercise(ctx.params.uuid, _exercise.id);
+            }
+
             ctx.status = 200;
             ctx.body = _exercise;
         } else {

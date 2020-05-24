@@ -465,13 +465,13 @@
                     <button type="button" class="nav-item btn btn-success" v-if="mode!=1" v-on:click.prevent="save">Записать</button>
                 </div>
 
-                <div class="btn-group mr-2" role="group" aria-label="Second group">
+                <div class="btn-group" role="group" aria-label="Second group">
                     <button type="button" class="btn btn-primary" v-if="testUndefined" v-on:click.prevent="createTest">Добавить тест</button>
                     <button type="button" class="btn btn-info" v-if="testDefined" v-on:click.prevent="openTest">Открыть тест</button>
                     <!-- <button type="button" class="btn btn-danger" v-if="testDefined" v-on:click.prevent="deleteTest">Удалить тест</button> -->
                 </div>
                 
-                <div class="btn-group mr-2" role="group" style="box-shadow: 0 0 2px rgb(0, 123, 255); border-radius: 5px;">
+                <div class="btn-group" role="group" style="box-shadow: 0 0 2px rgb(0, 123, 255); border-radius: 3px; margin: 0;">
                     <button type="button" class="btn" 
                         v-bind:class="[{'btn-primary':pages.information.shown}, {'btn-link' : !pages.information.shown}]"
                         v-on:click.prevent="showPage('information')">Информация</button>

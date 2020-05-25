@@ -138,6 +138,91 @@
             user-select: none;
         }
     </style>
+    <style>
+        .statistics{
+            padding: 10px;
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+        }
+        .statistics-inner{
+            margin-top: 10px;
+            padding: 0px;
+            box-shadow: 0 0 2px rgb(0, 123, 255);
+        }
+        .statistics-row{
+            user-select: none;
+        }
+        .statistics-row:hover{
+            background-color: rgba(0, 123, 255, 0.2);
+            cursor: pointer;
+        }
+        .candidatInfo{
+            width: 40%;
+            display: inline-block;
+            padding: 5px 0 0 10px;
+        }
+        .stats{
+            width: calc(60% - 4.5px);
+            display: inline-block;
+            font-size: 0;
+            height: 30;
+            vertical-align: top;
+        }
+        .stats-block{
+            display: inline-block;
+            font-size: 15px;
+            height: 70%;
+        }
+        .time-block{
+            font-size: 11px;
+            background-color: #17a2b8;
+        }
+        .success-block{
+            background-color: rgb(40, 167, 69);
+            /* width: 100px; */
+        }
+        .partially-block{
+            background-color: rgb(255, 193, 7);;
+        }
+        .wrong-block{
+            background-color: rgb(220, 53, 69);;
+        }
+        .passed-block{
+            background-color: rgb(0, 123, 255);;
+        }
+        .noData-block{
+            background-color: rgb(108, 117, 125);;
+        }
+        .height10{
+            height: 10%;
+        }
+        .height20{
+            height: 20%;
+        }
+        .height30{
+            height: 30%;
+        }
+        .height40{
+            height: 40%;
+        }
+        .height50{
+            height: 50%;
+        }
+        .height60{
+            height: 60%;
+        }
+        .height70{
+            height: 70%;
+        }
+        .height80{
+            height: 80%;
+        }
+        .height90{
+            height: 90%;
+        }
+        .height100{
+            height: 100%;
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script defer>
         window.onload = async function(event){
@@ -181,6 +266,7 @@
                 vacancy.candidats = '';
                 vacancy.invitations = '';
                 vacancy.executions = '';
+                vacancy.statistics = '';
 
                 document.getElementById('vacancyName').innerText = 'Вакансия. Создание';
             } else {
@@ -189,10 +275,60 @@
 
             // Vue.js -------------------
 
+            Vue.component('statistics-row', {
+                props : ['statistic', 'max_count', 'max_time'],
+                template : `<div class="statistics-row">
+                                <div class="candidatInfo">{{statistic.id}}. {{statistic.name}} {{max_time}}</div>
+                                <div class="stats"> 
+                                    <div
+                                        class="time-block" 
+                                        v-if="statistic.executing_time != 0"
+                                        v-bind:class="[{'height30':statistic.executing_time != 0}, {'height100':statistic.executing_time == 0}]"
+                                        v-bind:style="{width:statistic.executing_time/statistic.max_executing_time*100+'%'}">
+                                        <span class="badge badge-info">{{statistic.executing_time}}</span>
+                                    </div>
+                                    <div 
+                                        v-if="statistic.rightCount"
+                                        v-bind:class="[{'heigh70':statistic.executing_time != 0}, {'height100':statistic.executing_time == 0}]"
+                                        class="stats-block success-block" v-bind:style="{width:statistic.rightCount*25+'%'}">
+                                        <span class="badge badge-success">{{statistic.rightCount}}</span>
+                                    </div>
+                                    <div
+                                        v-if="statistic.partiallyCount"
+                                        class="stats-block partially-block"
+                                        v-bind:class="[{'heigh70':statistic.executing_time != 0}, {'height100':statistic.executing_time == 0}]"
+                                        v-bind:style="{width:statistic.partiallyCount*25+'%'}">
+                                        <span class="badge badge-warning">{{statistic.partiallyCount}}</span>
+                                    </div>
+                                    <div
+                                        v-if="statistic.wrongCount"
+                                        class="stats-block wrong-block"
+                                        v-bind:class="[{'heigh70':statistic.executing_time != 0}, {'height100':statistic.executing_time == 0}]"
+                                        v-bind:style="{width:statistic.wrongCount*25+'%'}">
+                                        <span class="badge badge-danger">{{statistic.wrongCount}}</span>
+                                    </div>
+                                    <div
+                                        v-if="statistic.passedCount"
+                                        class="stats-block passed-block"
+                                        v-bind:class="[{'heigh70':statistic.executing_time != 0}, {'height100':statistic.executing_time == 0}]"
+                                        v-bind:style="{width:statistic.passedCount*25+'%'}">
+                                        <span class="badge badge-primary">{{statistic.passedCount}}</span>
+                                    </div>
+                                    <div
+                                        v-if="statistic.noDataCount"
+                                        class="stats-block noData-block"
+                                        v-bind:class="[{'height70':statistic.executing_time != 0}, {'height100':statistic.executing_time == 0}]"
+                                        v-bind:style="{width:statistic.noDataCount*25+'%'}">
+                                        <span class="badge badge-secondary">{{statistic.noDataCount}}</span>
+                                    </div>
+                                </div>
+                    </div>`
+            })
+
             Vue.component('candidats-row', {
                 props: ['candidat'],
                 template: `
-                    <div class="candidats_row"v-on:click="$emit('open-candidat', $event, candidat)">
+                    <div class="candidats_row" v-on:click="$emit('open-candidat', $event, candidat)">
                         <div class="container" style="width:calc(60% - 4.5px); margin:0; display:inline-block">
                             {{ candidat.id }}. {{ candidat.name }} <span class="badge badge-primary" v-if="candidat.invited">Приглашение оформлено</span><span class="badge badge-success" v-if="candidat.executed">Выполнил тест</span>
                         </div>
@@ -251,6 +387,18 @@
 
                 return `${date}.${month}.${res.getFullYear()}`;
             }
+
+            let maxExecutingTime = 0;
+
+            for(let i = 0; i < vacancy.statistics.length; i ++){
+                if(maxExecutingTime < vacancy.statistics[i].executing_time){
+                    maxExecutingTime = vacancy.statistics[i].executing_time;
+                }
+            }
+
+            for(let i = 0; i < vacancy.statistics.length; i ++){
+                vacancy.statistics[i].max_executing_time = maxExecutingTime;
+            }
             
             let app = new Vue({
                 el          : '#vacancy',
@@ -269,10 +417,34 @@
                     candidats : vacancy.candidats,
                     invitations : vacancy.invitations,
                     executions : vacancy.executions,
+                    statistics : vacancy.statistics.sort(function(a, b){
+                                        if(a['executing_time'] < b['executing_time']){
+                                            return -1;
+                                        }
+
+                                        if(a['executing_time'] >= b['executing_time']){
+                                            return 1;
+                                        }
+                                    }),
                     creation_time_string : vacancy.creation_time == undefined ? '' : getDATE(vacancy.creation_time),
+                    reportSettings : {
+                        sort_by : 'executing_time',
+                        order: 'asc',
+                        display : {
+                            'executing_time' : true,
+                            'rightCount' : true,
+                            'partiallyCount': true,
+                            'wrongCount' : true,
+                            'passedCount' : true,
+                            'noDataCount' : true
+                        }
+                    },
                     pages : {
                                 information : {
                                     shown : true
+                                },
+                                statistics : {
+                                    shown : false
                                 },
                                 candidats : {
                                     shown : false
@@ -437,6 +609,91 @@
                     viewExectuionInfo : async function(execution){
                         let cLocation = document.location.href;
                         window.open(`${document.location.pathname}/candidats/${execution.executed.id}/execution`);
+                    },
+                    reloadStatistics: function(event){
+                        if(event != undefined){
+                            this.reportSettings.sort_by = event.target.value;
+                        }
+
+                        console.log('reloadStatistics');
+
+                        let comparator;
+
+                        this.statistics.forEach(function(element){
+                            if(this.fieldName == 'executedCount'){
+                                element.sortField = this.display['rightCount'] ? element['rightCount'] : element['_rightCount'] + 
+                                                    this.display['partiallyCount'] ? element['partiallyCount'] : element['_partiallyCount'] + 
+                                                    this.display['wrongCount'] ? element['wrongCount'] : element['_wrongCount'];
+                            }else{
+                                element.sortField = this.display[this.fieldName] ? element[this.fieldName] : element[`_${this.fieldName}`];
+                            }
+                        }, {fieldName : this.reportSettings.sort_by, display : this.reportSettings.display});
+
+                        switch(this.reportSettings.order){
+                            case 'asc':
+                                comparator = function(a, b){
+                                    aSortField = a.sortField;
+                                    bSortField = b.sortField;
+
+                                    if(aSortField < bSortField){
+                                        return -1;
+                                    }
+
+                                    if(aSortField >= bSortField){
+                                        return 1;
+                                    }
+                                } 
+                                break;
+                            case 'desc':
+                                comparator = function(a, b){
+                                    aSortField = a.sortField;
+                                    bSortField = b.sortField;
+
+                                    if(aSortField > bSortField){
+                                        return -1;
+                                    }
+
+                                    if(aSortField <= bSortField){
+                                        return 1;
+                                    }
+                                }
+                                break;
+                        }
+
+                        this.statistics = this.statistics.sort(comparator);
+                        // sort_by : 'executing_time',
+                        // order: 'asc',
+                        // display : {
+                        //     'executing_time' : true,
+                        //     'right' : true,
+                        //     'partially': true,
+                        //     'wrong' : true,
+                        //     'passed' : true,
+                        //     'noData' : true
+                        // }
+
+                        console.log(this.statistics.map(element => element.sortField).join(', '));
+                    },
+                    changeDisplaySettings : function(columnName){
+                        let newState = !this.reportSettings.display[columnName];
+
+                        if(!newState){
+                            this.statistics.forEach(function(element){
+                                element[`_${this}`] = element[`${this}`];
+                                element[`${this}`] = 0;
+                            }, columnName);
+                        } else {
+                            this.statistics.forEach(function(element){
+                                element[`${this}`] = element[`_${this}`];
+                                element[`_${this}`] = 0;
+                            }, columnName);
+                        }
+
+                        this.reportSettings.display[columnName] = !this.reportSettings.display[columnName];
+                    },
+                    changeOrder : function(newOrder){
+                        this.reportSettings.order = newOrder;
+                        this.reloadStatistics();
                     }
                 }
             });
@@ -460,21 +717,24 @@
         </div>
         <div class="container-fluid" id="vacancy-inner">
             <nav class="nav nav-pills btn-toolbar justify-content-between" style="margin-bottom: 10px;">
-                <div class="btn-group mr-2" role="group">
+                <div class="btn-group mr-2 btn-group-sm">
                     <button type="button" class="btn btn-info" v-if="mode!=0" v-on:click.prevent="changeViewMode">{{mode == 1 ? 'Редактировать' : 'Отмена'}}</button>
                     <button type="button" class="nav-item btn btn-success" v-if="mode!=1" v-on:click.prevent="save">Записать</button>
                 </div>
 
-                <div class="btn-group" role="group" aria-label="Second group">
+                <div class="btn-group btn-group-sm">
                     <button type="button" class="btn btn-primary" v-if="testUndefined" v-on:click.prevent="createTest">Добавить тест</button>
                     <button type="button" class="btn btn-info" v-if="testDefined" v-on:click.prevent="openTest">Открыть тест</button>
                     <!-- <button type="button" class="btn btn-danger" v-if="testDefined" v-on:click.prevent="deleteTest">Удалить тест</button> -->
                 </div>
                 
-                <div class="btn-group" role="group" style="box-shadow: 0 0 2px rgb(0, 123, 255); border-radius: 3px; margin: 0;">
+                <div class="btn-group btn-group-sm" role="group" style="box-shadow: 0 0 2px rgb(0, 123, 255); border-radius: 3px; margin: 0;">
                     <button type="button" class="btn" 
                         v-bind:class="[{'btn-primary':pages.information.shown}, {'btn-link' : !pages.information.shown}]"
                         v-on:click.prevent="showPage('information')">Информация</button>
+                    <button type="button" class="btn" 
+                        v-bind:class="[{'btn-primary':pages.statistics.shown}, {'btn-link' : !pages.statistics.shown}]"
+                        v-on:click.prevent="showPage('statistics')">Статистика</button>
                     <button type="button" class="btn" 
                         v-bind:class="[{'btn-primary':pages.candidats.shown}, {'btn-link' : !pages.candidats.shown}]"
                         v-on:click.prevent="showPage('candidats')"
@@ -518,7 +778,7 @@
 
             <div class="container-fluid" id="candidatsPage" v-show="pages.candidats.shown">
                 <nav class="nav nav-pills btn-toolbar justify-content-end" style="margin-bottom: 10px; width: 100%;">
-                    <button type="button" class="nav-item btn btn-success" v-on:click.prevent="createCandidat">Добавить кандидата</button>
+                    <button type="button" class="nav-item btn btn-sm btn-success" v-on:click.prevent="createCandidat">Добавить кандидата</button>
                 </nav>
                 <div class="container-fluid" id="candidats_rows">
                     <candidats-row
@@ -551,6 +811,81 @@
                     v-on:delete-invitation="deleteInvitation"></invitations-row>
             </div>
             <div v-show="invitations.length == 0" class="alert alert-info" role="alert" v-if="pages.invited.shown && mode != 0">
+                Список пуст
+            </div>
+
+            <div class="container statistics" v-show="pages.statistics.shown && mode != 0">
+                <div class="input-group input-group-sm mb-3">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text">Сортировать по</label>
+                    </div>
+                    <select
+                        class="custom-select"
+                        v-model="reportSettings.sort_by" 
+                        v-on:input="reloadStatistics($event)">
+                        <option value="executing_time">времени выполнения</option>
+                        <option value="rightCount">количеству правильных ответов</option>
+                        <option value="wrongCount">количеству неправильных ответов</option>
+                        <option value="executedCount">количеству выполненых заданий</option>
+                    </select>
+                    <div class="input-group-prepend">
+                        <label class="input-group-text">в порядке</label>
+                    </div>
+                    <div class="input-group-append">
+                        <button 
+                            class="btn btn-primary" 
+                            type="button" 
+                            :disabled="reportSettings.order == 'asc'"
+                            v-on:click.prevernt="changeOrder('asc')">возрастания</button>
+                        <button 
+                            class="btn btn-primary" 
+                            type="button" 
+                            :disabled="reportSettings.order == 'desc'"
+                            v-on:click.prevernt="changeOrder('desc')">убывания</button>
+                    </div>
+                </div>
+                <div class="input-group input-group-sm mb-0">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text">Отображать </label>
+                    </div>
+                    <div class="input-group-append">
+                        <button 
+                            class="btn" 
+                            v-bind:class="[{'btn-outline-info': !reportSettings.display.executing_time},{'btn-info': reportSettings.display.executing_time}]"
+                            v-on:click.prevent="changeDisplaySettings('executing_time')"
+                            type="button">время выполнения</button>
+                        <button 
+                            class="btn" 
+                            v-bind:class="[{'btn-outline-success': !reportSettings.display.rightCount},{'btn-success': reportSettings.display.rightCount}]"
+                            v-on:click.prevent="changeDisplaySettings('rightCount')"
+                            type="button">правильные решения</button>
+                        <button class="btn"
+                            v-bind:class="[{'btn-outline-warning': !reportSettings.display.partiallyCount},{'btn-warning': reportSettings.display.partiallyCount}]"
+                            v-on:click.prevent="changeDisplaySettings('partiallyCount')"
+                            type="button">частично правильные решения</button>
+                        <button class="btn"
+                            v-bind:class="[{'btn-outline-danger': !reportSettings.display.wrongCount},{'btn-danger': reportSettings.display.wrongCount}]"
+                            v-on:click.prevent="changeDisplaySettings('wrongCount')"
+                            type="button">неправильные решения</button>
+                        <button class="btn"
+                            v-bind:class="[{'btn-outline-primary': !reportSettings.display.passedCount},{'btn-primary': reportSettings.display.passedCount}]"
+                            v-on:click.prevent="changeDisplaySettings('passedCount')"
+                            type="button">пропущенные</button>
+                        <button class="btn"
+                            v-bind:class="[{'btn-outline-secondary': !reportSettings.display.noDataCount},{'btn-secondary': reportSettings.display.noDataCount}]"
+                            v-on:click.prevent="changeDisplaySettings('noDataCount')"
+                            type="button">не выполнявшиеся</button>
+                    </div>
+                </div>
+                <div class="container statistics-inner">
+                    <statistics-row
+                        v-for="statistic in statistics" 
+                        v-bind:statistic="statistic"
+                        v-bind:max_count="statistic.rightCount + statistic.wrongCount + statistic.partiallyCount + statistic.passedCount + statistic.noDataCount"
+                        v-bind:key="statistic.id"></statistics-row>
+                </div>
+            </div>
+            <div v-show="statistics.length == 0" class="alert alert-info" role="alert" v-if="pages.statistics.shown && mode != 0">
                 Список пуст
             </div>
 

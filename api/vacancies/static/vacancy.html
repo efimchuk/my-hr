@@ -326,7 +326,7 @@
             })
 
             Vue.component('candidats-row', {
-                props: ['candidat', 'vacancy_status'],
+                props: ['candidat', 'vacancy_status', 'test_id'],
                 template: `
                     <div class="candidats_row" v-on:click="$emit('open-candidat', $event, candidat)">
                         <div class="container" style="width:calc(60% - 4.5px); margin:0; display:inline-block">
@@ -338,7 +338,7 @@
                                 class="btn btn-info btn-sm"
                                 v-if="!(candidat.invited || candidat.executed)" 
                                 v-on:click.prevent="$emit('create-invitation', candidat)"
-                                :disabled="vacancy_status == 1">Сгенерировать ссылку</button>
+                                :disabled="vacancy_status == 1 || test_id == null">Сгенерировать ссылку</button>
                             <button 
                                 type="button" 
                                 class="btn btn-danger btn-sm" 
@@ -837,6 +837,7 @@
                         v-on:delete-candidat="deleteCandidat"
                         v-on:create-invitation="createInvitation" 
                         v-bind:vacancy_status="status"
+                        v-bind:test_id="test.id"
                         v-on:delete-invitation="deleteInvitation"></candidats-row>
                 </div>
                 <div v-show="candidats.length == 0" class="alert alert-info" role="alert" v-if="pages.candidats.shown">

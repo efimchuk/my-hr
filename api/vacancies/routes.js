@@ -22,6 +22,7 @@ router
     .post('/vacancies', Handlers.vacancies_post)
     .get('/vacancies/:uuid', Handlers.vacancies_uuid_get)
     .delete('/vacancies/:uuid', Handlers.vacancies_uuid_delete)
+    .delete('/vacancies/:uuid/close', Handlers.vacancies_uuid_close_delete)
     .get('/vacancies/:uuid/test', Handlers.vacancies_uuid_test_get)
     .post('/vacancies/:uuid/test', Handlers.vacancies_uuid_test_post)
     .delete('/vacancies/:uuid/test', Handlers.vacancies_uuid_test_delete)

@@ -60,7 +60,10 @@
                 props: ['vacancy'],
                 template: `
                     <div class="vacancies_row" :data-uuid="vacancy.uuid" v-on:click="$emit('open-vacancy', $event, vacancy)">
-                        <div class="vacancies_id">{{ vacancy.id }}</div> <div class="vacancies_name">{{ vacancy.name }}</div>
+                        <div class="vacancies_id">{{ vacancy.id }}</div> <div class="vacancies_name">{{ vacancy.name }} 
+                            <span class="badge badge-primary" v-if="vacancy.status == 0">Открыта</span>
+                            <span class="badge badge-success" v-if="vacancy.status == 1">Закрыта</span>
+                        </div>
                         <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="$emit('delete-vacancy', vacancy)">Удалить</button>
                     </div>`
             })
@@ -123,7 +126,11 @@
                 <a class="btn btn-success" href="/vacancies/new">Добавить</a>
             </nav>
             <div v-show="vacancies.length != 0" id="vacancies-list">
-                <vacancy-row v-for="vacancy in vacancies" v-bind:vacancy="vacancy" v-on:open-vacancy="openVacancy" v-on:delete-vacancy="deleteVacancy"></vacancy-row>
+                <vacancy-row 
+                    v-for="vacancy in vacancies" 
+                    v-bind:vacancy="vacancy" 
+                    v-on:open-vacancy="openVacancy" 
+                    v-on:delete-vacancy="deleteVacancy"></vacancy-row>
             </div>
             <div v-show="vacancies.length == 0" class="alert alert-info" role="alert">
                 Список пуст

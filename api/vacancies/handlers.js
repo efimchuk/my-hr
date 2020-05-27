@@ -310,6 +310,12 @@ async function vacancies_uuid_candidats_uuid_execution_get(ctx, next){
 async function vacancies_uuid_candidats_uuid_execution_post(ctx, next){}
 async function vacancies_uuid_candidats_execution_uuid_delete(ctx, next){}
 
+async function vacancies_uuid_close_delete(ctx, next){
+    await Vacancies.close(ctx.params.uuid);
+
+    ctx.status = 202;
+}
+
 module.exports = {
     vacancies_get : vacancies_get,
     vacancies_post : vacancies_post,
@@ -328,5 +334,6 @@ module.exports = {
     vacancies_uuid_candidats_uuid_invitation_delete : vacancies_uuid_candidats_uuid_invitation_delete,
     vacancies_uuid_candidats_uuid_execution_get : vacancies_uuid_candidats_uuid_execution_get,
     // vacancies_uuid_candidats_uuid_execution_post : vacancies_uuid_candidats_uuid_execution_post, 
-    // vacancies_uuid_candidats_execution_uuid_delete : vacancies_uuid_candidats_execution_uuid_delete
+    // vacancies_uuid_candidats_execution_uuid_delete : vacancies_uuid_candidats_execution_uuid_delete,
+    vacancies_uuid_close_delete : vacancies_uuid_close_delete
 }
